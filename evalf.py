@@ -88,11 +88,11 @@ def get_delt_currency_drift(tilde_Y, alpha, tau2, g, E, d):
 
 
 def get_lambda_sum(E):
-    return 0.5 * (np.absolute(E) - E)
+    return 0.5 * (E + np.absolute(E))
 
 
 def get_gamma_select(E):
-    return 0.5 * (E + np.absolute(E))
+    return 0.5 * (np.absolute(E) - E)
 
 
 def get_N(x, tilde_Y, lambda_sum, gamma_select, q):
