@@ -2,6 +2,7 @@ from scipy.integrate import odeint
 import numpy as np
 from evalf import evalf, generate_inputs, get_E
 import matplotlib.pyplot as plt
+import einops
 
 
 def test(x0, t, n=3):
@@ -18,41 +19,58 @@ def plot_evolution(ans, n=3):
     [mu_1, mu_2, mu_3, ...],
     ...]
     """
-    # y
-    plt.plot(ans[:, 0], label="Node 1")
-    plt.plot(ans[:, 1], label="Node 2")
-    plt.plot(ans[:, 2], label="Node 3")
-    plt.legend()
-    plt.title("Evolution of true currency")
-    plt.ylabel("True currency")
-    plt.xlabel("Time")
-    plt.show()
+    fig, ax = plt.subplots(ans.shape[0], ans.shape[1], figsize=(8, 8))
+    drift = np.max(np.abs(ans[2]))
+    max_y = np.max(ans[:1])
+    min_y = np.min(ans[:1])
+    for row in range(ans.shape[0]):
+        for col in range(ans.shape[1]):
+            if row < 2:
+                ax[row][col].set_yscale('log')
+            ax[row][col].plot(ans[row, col], label="Node {}".format(col))
+            ax[0][col].set_title("Country {}".format(col))
+            ax[row][col].axhline(y=0, color="lightgray", dashes=[1,1], zorder=-10)
+            if row < 2:
+                ax[row][col].set_ylim([min_y, max_y])
+            elif row == 2:
+                ax[row][col].set_ylim([-drift, drift])
+            else:
+                ax[row][col].set_ylim([-.1, .1])
 
-    # tilde_Y
-    plt.plot(ans[:, 3], label="Node 1")
-    plt.plot(ans[:, 4], label="Node 2")
-    plt.plot(ans[:, 5], label="Node 3")
-    plt.legend()
-    plt.title("Evolution of effective currency")
-    plt.ylabel("Effective currency")
-    plt.xlabel("Time")
-    plt.show()
+    ax[0][0].set_ylabel("True currency")
+    ax[0][0].set_xlabel("Time")
 
-    # mu
-    plt.plot(ans[:, 6], label="Node 1")
-    plt.plot(ans[:, 7], label="Node 2")
-    plt.plot(ans[:, 8], label="Node 3")
-    plt.legend()
-    plt.title("Evolution of currency drift")
-    plt.ylabel("Currency drift")
-    plt.xlabel("Time")
+    ax[1][0].set_ylabel("Effective currency")
+    ax[1][0].set_xlabel("Time")
+
+    ax[2][0].set_ylabel("Currency drift")
+    ax[2][0].set_xlabel("Time")
+    plt.tight_layout()
     plt.show()
 
     return
 
 
+# test cases, all with two countries:
+# 1) all equal
+# 2) all equal, but y_tilde starts too high
+# 3) start with slightly different currency values, should converge
+# 4) test with very small tau2 / tau_mu
 if __name__ == '__main__':
-    x0 = np.array([[1, 1, 1], [2, 2, 2], [0, 0, 0]]).reshape(9,)
-    t = np.linspace(0, 10, 10)
-    ans = test(x0, t)
-    plot_evolution(ans[0])
+    T = 20
+    x0 = np.array([
+        [1, 1.1], 
+        [1, 1.1],
+        [0, 0],
+        [0, 0] # meaningless
+        ]).reshape(-1,)
+    t = np.linspace(0, T, T)
+    E = get_E("configs/test.txt")
+    x, p, u = generate_inputs(2, E)
+    F = evalf(x0, t, p, u, E, debug=True)
+    F = np.reshape(F, [4, -1]).transpose()
+    ans = test(x0, t)[0]
+    ans = einops.rearrange(ans, "t (d n) -> d n t", d=4)
+    print(F)
+    #print(ans)
+    plot_evolution(ans)
