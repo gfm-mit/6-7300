@@ -14,46 +14,50 @@ def generate_inputs(n, E):
     tau2 = np.ones((n, 1))                 # n x 1
     omega = np.ones((n, 1))                # n x 1
     alpha = np.ones((n, 1))                # n x 1
-    gamma2 = np.ones((E.shape[0], 1))      # nm x 1
     d = np.ones((E.shape[0], 1))           # nm x 1
     g = np.ones((n, 1))                    # n x 1 (little y)
     delt_w = np.ones((n, 1))               # n x 1
     # Build x, p, u arrays
-    # TODO: update to dict
-    x = [y, tilde_y, mu]
-    p = [tau1, tau2, omega, alpha, gamma2, d, g]
-    u = [delt_w]
+    x = np.array([y, tilde_y, mu])
+    p = {'tau1': tau1, 'tau2': tau2, 'omega': omega, 'alpha': alpha, 'd': d, 'g': g}
+    u = np.array([delt_w])
     return x, p, u
 
 
-def evalf(x, p, u, E):
+def evalf(x, t, p, u, E):
     """
     Removed gamma1 and nu
     Removed y_w, P_i and P_j
 
-    :param x: state vector
+    :param x (array): state vector
     [y, tilde_y, mu]
     - y = true currency
     - tilde_y = effective currency
     - mu = currency drift
-    :param p: parameters
-    [tau1, tau2, omega, alpha, gamma2, d, v, g]
+    :param p (dict): parameters
+    [tau1, tau2, omega, alpha, d, v, g]
     - tau1 = delay between true and effective currency
     - tau2 = delay between trade imbalance and currency drift
     - omega = strength of market volatility
     - alpha = converts trade imbalance into monetary value
-    - gamma2 = tuning parameter of BTR
     - d = distance
     - v = value differential parameter
     - g = GDP at each node
-    :param u: inputs
+    :param u (array): inputs
     [delt_w]
     :return: delt_x = f(x, p, u)
     """
-    delt_true_currency = get_delt_true_currency(mu=x[2], omega=p[2], delt_W=u[0], Y=x[0])
-    delt_eff_currency = get_eff_currency(Y=x[0], tilde_Y=x[1], tau1=p[0])
-    delt_currency_drift = get_currency_drift(tilde_Y=x[1], alpha=p[3], tau2=p[1], g=p[6], E=E, d=p[5])
-    return np.array([delt_true_currency, delt_eff_currency, delt_currency_drift])
+    # Reshape x (had to flatten to make it work with scipy solver)
+    x = x.reshape(3, 3, 1)
+
+    # Compute components of x
+    delt_true_currency = get_delt_true_currency(mu=x[2], omega=p['omega'], delt_W=u[0], Y=x[0])
+    delt_eff_currency = get_eff_currency(Y=x[0], tilde_Y=x[1], tau1=p['tau1'])
+    delt_currency_drift = get_currency_drift(tilde_Y=x[1], alpha=p['alpha'], tau2=p['tau2'], g=p['g'], E=E, d=p['d'])
+
+    # Flatten X (to make compatible with scipy solver)
+    x_dot = np.array([delt_true_currency, delt_eff_currency, delt_currency_drift]).reshape(9,)
+    return x_dot
 
 
 def get_delt_true_currency(mu, omega, delt_W, Y):
@@ -122,5 +126,6 @@ def get_E(config):
 if __name__ == '__main__':
     n = 3
     E = get_E('configs/test.txt')
+    t = np.linspace(0, 10, 10)
     x, p, u = generate_inputs(n, E)
-    evalf(x, p, u, E)
+    evalf(x, t, p, u, E)
