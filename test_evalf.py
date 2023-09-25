@@ -18,16 +18,36 @@ def plot_evolution(ans, n=3):
     [mu_1, mu_2, mu_3, ...],
     ...]
     """
-    print(ans.shape)
-    # Iterating over each timestep
-    y_evolution, tilde_y_evolution, mu_evolution = [], [], []
-    """
-    for t in ans.shape[0]:
-        for node in range(n):
-            y_evolution.append()
-            tilde_y_evolution.append()
-            mu_evolution.append()
-    """
+    # y
+    plt.plot(ans[:, 0], label="Node 1")
+    plt.plot(ans[:, 1], label="Node 2")
+    plt.plot(ans[:, 2], label="Node 3")
+    plt.legend()
+    plt.title("Evolution of true currency")
+    plt.ylabel("True currency")
+    plt.xlabel("Time")
+    plt.show()
+
+    # tilde_Y
+    plt.plot(ans[:, 3], label="Node 1")
+    plt.plot(ans[:, 4], label="Node 2")
+    plt.plot(ans[:, 5], label="Node 3")
+    plt.legend()
+    plt.title("Evolution of effective currency")
+    plt.ylabel("Effective currency")
+    plt.xlabel("Time")
+    plt.show()
+
+    # mu
+    plt.plot(ans[:, 6], label="Node 1")
+    plt.plot(ans[:, 7], label="Node 2")
+    plt.plot(ans[:, 8], label="Node 3")
+    plt.legend()
+    plt.title("Evolution of currency drift")
+    plt.ylabel("Currency drift")
+    plt.xlabel("Time")
+    plt.show()
+
     return
 
 
