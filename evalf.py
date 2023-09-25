@@ -52,8 +52,8 @@ def evalf(x, t, p, u, E):
 
     # Compute components of x
     delt_true_currency = get_delt_true_currency(mu=x[2], omega=p['omega'], delt_W=u[0], Y=x[0])
-    delt_eff_currency = get_eff_currency(Y=x[0], tilde_Y=x[1], tau1=p['tau1'])
-    delt_currency_drift = get_currency_drift(tilde_Y=x[1], alpha=p['alpha'], tau2=p['tau2'], g=p['g'], E=E, d=p['d'])
+    delt_eff_currency = get_delt_eff_currency(Y=x[0], tilde_Y=x[1], tau1=p['tau1'])
+    delt_currency_drift = get_delt_currency_drift(tilde_Y=x[1], alpha=p['alpha'], tau2=p['tau2'], g=p['g'], E=E, d=p['d'])
 
     # Flatten X (to make compatible with scipy solver)
     x_dot = np.array([delt_true_currency, delt_eff_currency, delt_currency_drift]).reshape(9,)
@@ -67,14 +67,14 @@ def get_delt_true_currency(mu, omega, delt_W, Y):
     return np.multiply(mu + np.multiply(omega, delt_W), Y)
 
 
-def get_eff_currency(Y, tilde_Y, tau1):
+def get_delt_eff_currency(Y, tilde_Y, tau1):
     """
     delta_Y_tilde = (Y - tilde_Y) ./ tau1
     """
     return np.divide((Y - tilde_Y), tau1)
 
 
-def get_currency_drift(tilde_Y, alpha, tau2, g, E, d):
+def get_delt_currency_drift(tilde_Y, alpha, tau2, g, E, d):
     """
     delt_mu = (alpha .* N - mu) ./ tau2
     """
