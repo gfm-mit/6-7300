@@ -64,7 +64,7 @@ def get_delt_true_currency(mu, omega, delt_W, Y):
     """
     delta_Y = (mu + alpha .* delt_W) .* Y
     """
-    return mu + np.multiply((np.multiply(omega, delt_W)), Y)
+    return np.multiply(mu + np.multiply(omega, delt_W), Y)
 
 
 def get_eff_currency(Y, tilde_Y, tau1):
