@@ -19,6 +19,7 @@ def generate_inputs(n, E):
     g = np.ones((n, 1))                    # n x 1 (little y)
     delt_w = np.ones((n, 1))               # n x 1
     # Build x, p, u arrays
+    # TODO: update to dict
     x = [y, tilde_y, mu]
     p = [tau1, tau2, omega, alpha, gamma2, d, g]
     u = [delt_w]
