@@ -1,30 +1,6 @@
 import numpy as np
 
 
-def generate_inputs(n):
-    """
-    :param n (int): number of nodes
-    :return: state vector x, parameters p, inputs u
-    """
-    # Placeholders
-    y = np.ones([n])                    # n x 1
-    tilde_y = np.ones([n])              # n x 1
-    mu = np.ones([n])                   # n x 1
-    tau1 = 1 * np.ones([n])                 # n x 1
-    tau2 = 1 * np.ones([n])                 # n x 1
-    sigma = 0.05 * np.ones([n])                # n x 1
-    alpha = -1*np.ones([n])                # n x 1
-    gamma = np.ones([n])                # n x 1
-    d = np.ones([n, n])                 # nm x 1
-    g = np.ones([n])                    # n x 1 (little y)
-    delt_w = np.zeros([n])              # n x 1
-    # Build x, p, u arrays
-    x = np.array([y, tilde_y, mu])
-    p = {'tau1': tau1, 'tau2': tau2, 'sigma': sigma, 'alpha': alpha, 'gamma': gamma, 'd': d, 'g': g}
-    u = np.array(delt_w)
-    return x, p, u
-
-
 def evalf(x, t, p, u):
     """
     Removed gamma1 and nu
@@ -86,9 +62,3 @@ def evalf(x, t, p, u):
         ])
     return x_dot
 
-
-if __name__ == '__main__':
-    n = 2
-    t = np.linspace(0, 10, 10)
-    x, p, u = generate_inputs(n)
-    evalf(x, t, p, u)
