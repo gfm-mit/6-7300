@@ -9,6 +9,6 @@ if __name__ == '__main__':
     print(p)
     print(u)
 
-    print(np.round(finiteDifferenceJacobian(evalf, x, p, u), 3))
+    print(finiteDifferenceJacobian(evalf, x, p, u, 1e-8))
     print()
-    print(np.round(evalJacobian(x, p, u), 3)) 
+    print(evalJacobian(x, p, u)) 
