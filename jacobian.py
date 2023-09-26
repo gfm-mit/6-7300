@@ -1,6 +1,7 @@
 from evalf import evalf, get_E, generate_inputs
 import numpy as np
 
+
 def finiteDifferenceJacobian(func, x, p, u, delta = 1e-6):
     F0 = func(x, p, u)
 
@@ -13,6 +14,7 @@ def finiteDifferenceJacobian(func, x, p, u, delta = 1e-6):
         J[:,k] = (Fk - F0)/delta
 
     return J
+
 
 def evalJacobian(x, p, u):
 

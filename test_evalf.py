@@ -1,14 +1,13 @@
 from scipy.integrate import odeint
 import numpy as np
-from evalf import evalf, generate_inputs, get_E
+from evalf import evalf, generate_inputs
 import matplotlib.pyplot as plt
 import einops
 
 
 def test(x0, t, n=3):
-    E = get_E('configs/test.txt')
-    x, p, u = generate_inputs(n, E)
-    ans = odeint(evalf, x0, t, args=(p, u, E), full_output=True)
+    x, p, u = generate_inputs(n)
+    ans = odeint(evalf, x0, t, args=(p, u), full_output=True)
     return ans
 
 
@@ -64,9 +63,8 @@ if __name__ == '__main__':
         [0, 0]
         ]).reshape(-1,)
     t = np.linspace(0, T, T)
-    E = get_E("configs/test.txt")
-    x, p, u = generate_inputs(2, E)
-    F = evalf(x0, t, p, u, E, debug=True)
+    x, p, u = generate_inputs(2)
+    F = evalf(x0, t, p, u)
     F = np.reshape(F, [3, -1]).transpose()
     ans = test(x0, t)[0]
     ans = einops.rearrange(ans, "t (d n) -> d n t", d=3)
