@@ -1,5 +1,5 @@
 import numpy as np
-
+import einops
 
 def generate_inputs(n):
     """
@@ -12,7 +12,7 @@ def generate_inputs(n):
     mu = np.ones([n])                   # n x 1
     tau1 = 1 * np.ones([n])                 # n x 1
     tau2 = 1 * np.ones([n])                 # n x 1
-    sigma = 0.05 * np.ones([n])                # n x 1
+    sigma = 1e-3 * np.ones([n])                # n x 1
     alpha = -1*np.ones([n])                # n x 1
     gamma = np.ones([n])                # n x 1
     d = np.ones([n, n])                 # nm x 1
@@ -71,7 +71,7 @@ def evalf(x, t, p, u):
     
     # update node quantities
     for i in range(n):
-        delt_true_currency[i] = mu[i] * y[i] + p['sigma'][i] * y[i] * u[i]
+        delt_true_currency[i] = mu[i] * y[i]
         delt_eff_currency[i] = (y[i] - y_tilde[i]) / p['tau1'][i]
         exports = x_ij[i]
         imports = x_ij[:, i] * y_tilde[i] / y_tilde
@@ -86,9 +86,19 @@ def evalf(x, t, p, u):
         ])
     return x_dot
 
+def evalg(x, t, p, u):
+    n = x.shape[0] // 3
+    y, y_tilde, mu = x.reshape(3, n)
+    return np.concatenate([
+        p['sigma'] * y,
+        0 * y_tilde,
+        0 * mu
+        ])
 
 if __name__ == '__main__':
     n = 2
-    t = np.linspace(0, 10, 10)
     x, p, u = generate_inputs(n)
-    evalf(x, t, p, u)
+    x0 = np.reshape(x, [-1])
+    dx = evalf(x0, None, p, u)
+    dx = einops.rearrange(dx, "(d n) -> n d", d=3)
+    print(dx)
