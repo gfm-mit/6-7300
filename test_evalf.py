@@ -6,6 +6,7 @@ import einops
 from plot_util import plot_evolution
 import sdeint
 
+
 def test_symmetric_equilibrium():
     x, p, u = generate_inputs(2)
     x0 = np.array([
@@ -20,7 +21,7 @@ def test_symmetric_equilibrium():
 
 def test_convergence():
     T = 1000
-    x, p, u = generate_inputs(3)
+    x, p, u = generate_inputs(2)
     x0 = np.array([
         [1, 1.1],
         [1, 1.1],
@@ -48,12 +49,7 @@ def test_delays():
     ans_sm = runode(x0, t, p, u)[0]
     ans_sm = einops.rearrange(ans_sm, "t (d n) -> d n t", d=3)
     # Measure convergence by measuring oscillation at end of T
-    oscillation = []
-    for i in range(1, 10):
-        t_x = ans_sm[:, :, 80+i]
-        t_xplus10 = ans_sm[:, :, (80+i)+10]
-        oscillation.append(abs(t_x - t_xplus10))
-    avg_sm_oscilation = sum(oscillation)/len(oscillation)
+    avg_sm_oscilation = measure_oscillations(ans_sm)
 
     # Large time delay should converge more slowly
     x, p, u = generate_inputs(2)
@@ -66,13 +62,34 @@ def test_delays():
     t = np.linspace(0, T, T)
     ans_lg = runode(x0, t, p, u)[0]
     ans_lg = einops.rearrange(ans_lg, "t (d n) -> d n t", d=3)
+    avg_lg_oscilation = measure_oscillations(ans_lg)
+    assert(np.mean(avg_sm_oscilation) < np.mean(avg_lg_oscilation))
+
+
+def test_ring():
+    T = 100
+    x, p, u = generate_inputs(2)
+    p['alpha'] = -1e-1*np.ones([2])
+    x0 = np.array([
+        [1, 1.1],
+        [1, 1.1],
+        [0, 0]
+        ]).reshape(-1,)
+    t = np.linspace(0, T, T)
+    ans = runode(x0, t, p, u)[0]
+    ans = einops.rearrange(ans, "t (d n) -> d n t", d=3)
+    print(ans)
+    plot_evolution(ans, 2)
+
+
+def measure_oscillations(ans):
     oscillation = []
     for i in range(1, 10):
-        t_x = ans_lg[:, :, 80+i]
-        t_xplus10 = ans_lg[:, :, (80+i)+10]
+        t_x = ans[:, :, 80 + i]
+        t_xplus10 = ans[:, :, (80 + i) + 10]
         oscillation.append(abs(t_x - t_xplus10))
-    avg_lg_oscilation = sum(oscillation)/len(oscillation)
-    assert(np.mean(avg_sm_oscilation) < np.mean(avg_lg_oscilation))
+    avg_oscilation = sum(oscillation) / len(oscillation)
+    return avg_oscilation
 
 
 def runode(x0, t, p, u):
@@ -89,10 +106,10 @@ def generate_inputs(n):
     y = np.ones([n])                    # n x 1
     tilde_y = np.ones([n])              # n x 1
     mu = np.ones([n])                   # n x 1
-    tau1 = 1 * np.ones([n])                 # n x 1
-    tau2 = 1 * np.ones([n])                 # n x 1
-    sigma = 0.05 * np.ones([n])                # n x 1
-    alpha = -1*np.ones([n])                # n x 1
+    tau1 = 1 * np.ones([n])             # n x 1
+    tau2 = 1 * np.ones([n])             # n x 1
+    sigma = 0.05 * np.ones([n])         # n x 1
+    alpha = -1*np.ones([n])             # n x 1
     gamma = np.ones([n])                # n x 1
     d = np.ones([n, n])                 # nm x 1
     g = np.ones([n])                    # n x 1 (little y)
@@ -102,12 +119,6 @@ def generate_inputs(n):
     p = {'tau1': tau1, 'tau2': tau2, 'sigma': sigma, 'alpha': alpha, 'gamma': gamma, 'd': d, 'g': g}
     u = np.array(delt_w)
     return x, p, u
-
-
-def runode(x0, t, n=3):
-    x, p, u = generate_inputs(n)
-    ans = odeint(evalf, x0, t, args=(p, u), full_output=True)
-    return ans
 
   
 # test cases, all with two countries:
@@ -141,4 +152,6 @@ if __name__ == '__main__':
     ans = einops.rearrange(ans, "t (d n) -> d n t", d=3)
     #print(F)
     #print(ans)
-    plot_evolution(ans)
+    #plot_evolution(ans)
+    print('test ring')
+    test_ring()
