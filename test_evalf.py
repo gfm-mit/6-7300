@@ -135,12 +135,12 @@ def generate_inputs(n):
 
   
 # test cases, all with two countries:
-# 1) all equal
+# 1) all equal (GF)
 # 2) all equal, but y_tilde starts too high
-# 3) start with slightly different currency values, should converge
-# 4) test with very small tau2 / tau_mu
-# 5) with large alpha, shouldn't ring
-# 6) with small alpha, should ring
+# 3) start with slightly different currency values, should converge (JR)
+# 4) test with very small tau2 / tau_mu (JR)
+# 5) with large alpha, shouldn't ring (JR)
+# 6) with small alpha, should ring (JR)
 if __name__ == '__main__':
     T = 100
     x0 = np.array([
