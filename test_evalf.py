@@ -139,13 +139,14 @@ def generate_inputs(n):
     tau2 = 1 * np.ones([n])             # n x 1
     sigma = 1e-3 * np.ones([n])         # n x 1
     alpha = -1*np.ones([n])             # n x 1
-    gamma = np.ones([n])                # n x 1
+    gamma2 = np.ones([n])                # n x 1
     d = np.ones([n, n])                 # nm x 1
     g = np.ones([n])                    # n x 1 (little y)
+    gw = np.sum(g)
     delt_w = np.zeros([n])              # n x 1
     # Build x, p, u arrays
     x = np.array([y, tilde_y, mu])
-    p = {'tau1': tau1, 'tau2': tau2, 'sigma': sigma, 'alpha': alpha, 'gamma': gamma, 'd': d, 'g': g}
+    p = {'tau1': tau1, 'tau2': tau2, 'sigma': sigma, 'alpha': alpha, 'gamma2': gamma2, 'd': d, 'g': g, 'gw':gw}
     u = np.array(delt_w)
     return x, p, u
 

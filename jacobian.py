@@ -17,12 +17,12 @@ def finiteDifferenceJacobian(func, x, p, u, delta = 1e-6):
 
     return J
 
-
 def evalJacobian(x, p, u):
 
     # First n are Yi's
     # Next n are Yi tilde
     # Last n are mu_i
+    x = x.flatten()
 
     J = np.zeros((x.shape[0], x.shape[0])).astype(np.float64)
     n = int(x.shape[0]/3)
@@ -43,10 +43,10 @@ def evalJacobian(x, p, u):
 
                 for k in range(n):
                     if k == i: continue
-                    sum1 += p['g'][k] * (x[n + k] ** p['gamma2'])/p['d'][i][k]
-                    sum2 += p['g'][k] / (p['d'][k][i] * (x[n + k] ** p['gamma2']))
+                    sum1 += p['g'][k] * (x[n + k] ** p['gamma2'][i])/p['d'][i][k]
+                    sum2 += p['g'][k] / (p['d'][k][i] * (x[n + k] ** p['gamma2'][i]))
 
-                J[2 * n + i][n + j] = -p['alpha'] * p['g'][i] * p['gamma2']/(p['tau2'][i] * p['gw']) * ( sum1/(x[n + i] ** (1 + p['gamma2'])) + sum2 * (x[n + i] ** (p['gamma2'] - 1)) )  # dF(mu_i) / dYt_i
+                J[2 * n + i][n + j] = -p['alpha'][i] * p['g'][i] * p['gamma2'][i]/(p['tau2'][i] * p['gw']) * ( sum1/(x[n + i] ** (1 + p['gamma2'][i])) + sum2 * (x[n + i] ** (p['gamma2'][i] - 1)) )  # dF(mu_i) / dYt_i
 
             else:
                 J[i][j] = 0 # dF(Y_i) / dYj
@@ -57,12 +57,14 @@ def evalJacobian(x, p, u):
 
                 J[2 * n + i][2 * n + j] = 0  # dF(mu_i) / dmu_j
 
-                J[2 * n + i][n + j] = p['alpha'] * p['g'][i] * p['gamma2'] * p['g'][j]/(p['tau2'][i] * p['gw'] * p['d'][i][j])
-                J[2 * n + i][n + j] *= ( (x[n + j] ** (p['gamma2']-1))/(x[n + i] ** p['gamma2']) + (x[n + i] ** p['gamma2'])/(x[n + j] ** (p['gamma2']+1)))  # dF(mu_i) / dYt_j
+                J[2 * n + i][n + j] = p['alpha'][i] * p['g'][i] * p['gamma2'][i] * p['g'][j]/(p['tau2'][i] * p['gw'] * p['d'][i][j])
+                J[2 * n + i][n + j] *= ( (x[n + j] ** (p['gamma2'][i]-1))/(x[n + i] ** p['gamma2'][i]) + (x[n + i] ** p['gamma2'][i])/(x[n + j] ** (p['gamma2'][i]+1)))  # dF(mu_i) / dYt_j
 
             J[i][n + j] = 0 # dF(Y_i) / dYt_j
             J[n + i][2 * n + j] = 0 # dF(Yt_i) / dmu_j
             J[2 * n + i][j] = 0   # dF(mu_i) / dY_j
+
+    return J
 
 
 if __name__ == '__main__':

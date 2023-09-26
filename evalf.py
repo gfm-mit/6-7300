@@ -44,7 +44,7 @@ def evalf(x, t, p, u):
         for j in range(n):
             if i != j:
                 x_ij[i, j] = p['g'][i] * p['g'][j] / g_w / p['d'][i, j]
-                x_ij[i, j] *= np.power(y_tilde[i] / y_tilde[j], p['gamma'][i])
+                x_ij[i, j] *= np.power(y_tilde[i] / y_tilde[j], p['gamma2'][i])
     
     # update node quantities
     for i in range(n):
