@@ -48,8 +48,7 @@ def test_delays():
     t = np.linspace(0, T, T)
     ans_sm = runode(x0, t, p, u)[0]
     ans_sm = einops.rearrange(ans_sm, "t (d n) -> d n t", d=3)
-    # Measure convergence by measuring oscillation at end of T
-    avg_sm_oscilation = measure_oscillations(ans_sm)
+    avg_sm_oscillation = measure_oscillations(ans_sm)
 
     # Large time delay should converge more slowly
     x, p, u = generate_inputs(2)
@@ -62,13 +61,15 @@ def test_delays():
     t = np.linspace(0, T, T)
     ans_lg = runode(x0, t, p, u)[0]
     ans_lg = einops.rearrange(ans_lg, "t (d n) -> d n t", d=3)
-    avg_lg_oscilation = measure_oscillations(ans_lg)
-    assert(np.mean(avg_sm_oscilation) < np.mean(avg_lg_oscilation))
+    avg_lg_oscillation = measure_oscillations(ans_lg)
+    assert(np.mean(avg_sm_oscillation) < np.mean(avg_lg_oscillation))
 
 
-def test_ring():
+def test_elasticity():
     T = 100
     x, p, u = generate_inputs(2)
+
+    # Low elasticity means less oscillations
     p['alpha'] = -1e-1*np.ones([2])
     x0 = np.array([
         [1, 1.1],
@@ -77,9 +78,21 @@ def test_ring():
         ]).reshape(-1,)
     t = np.linspace(0, T, T)
     ans = runode(x0, t, p, u)[0]
-    ans = einops.rearrange(ans, "t (d n) -> d n t", d=3)
-    print(ans)
-    plot_evolution(ans, 2)
+    ans_low = einops.rearrange(ans, "t (d n) -> d n t", d=3)
+    avg_low_oscillation = measure_oscillations(ans_low)
+
+    # High elasticity means more oscillations
+    p['alpha'] = -2 * np.ones([2])
+    x0 = np.array([
+        [1, 1.1],
+        [1, 1.1],
+        [0, 0]
+    ]).reshape(-1, )
+    t = np.linspace(0, T, T)
+    ans = runode(x0, t, p, u)[0]
+    ans_high = einops.rearrange(ans, "t (d n) -> d n t", d=3)
+    avg_high_oscillation = measure_oscillations(ans_high)
+    assert(np.mean(avg_low_oscillation) < np.mean(avg_high_oscillation))
 
 
 def measure_oscillations(ans):
@@ -153,5 +166,4 @@ if __name__ == '__main__':
     #print(F)
     #print(ans)
     #plot_evolution(ans)
-    print('test ring')
-    test_ring()
+
