@@ -11,4 +11,4 @@ if __name__ == '__main__':
 
     print(np.round(finiteDifferenceJacobian(evalf, x, p, u), 3))
     print()
-    print(np.round(evalJacobian(x, p, u), 3))
+    print(np.round(evalJacobian(x, p, u), 3)) 

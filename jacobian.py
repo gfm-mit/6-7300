@@ -64,7 +64,7 @@ def evalJacobian(x, p, u):
             J[n + i][2 * n + j] = 0 # dF(Yt_i) / dmu_j
             J[2 * n + i][j] = 0   # dF(mu_i) / dY_j
 
-    return J
+    return J 
 
 
 if __name__ == '__main__':
