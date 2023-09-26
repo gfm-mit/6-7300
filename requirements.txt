@@ -1,0 +1,5 @@
+scipy
+matplotlib
+einops
+pytest
+sdeint
