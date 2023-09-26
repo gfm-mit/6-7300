@@ -89,11 +89,11 @@ def evalf(x, t, p, u):
 def evalg(x, t, p, u):
     n = x.shape[0] // 3
     y, y_tilde, mu = x.reshape(3, n)
-    return np.concatenate([
+    return np.diag(np.concatenate([
         p['sigma'] * y,
         0 * y_tilde,
         0 * mu
-        ])
+        ]))
 
 if __name__ == '__main__':
     n = 2

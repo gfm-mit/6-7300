@@ -44,7 +44,7 @@ if __name__ == '__main__':
     def f_wrapper(x, t):
         return evalf(x, t, p, u)
     def g_wrapper(x, t):
-        g = evalg(x, t, p, u)[:, np.newaxis]
+        g = evalg(x, t, p, u)[:]
         print(g.shape)
         return g
     G = evalf(x0, t, p, u)
