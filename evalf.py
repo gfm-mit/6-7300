@@ -11,13 +11,13 @@ def generate_inputs(n, E):
     tilde_y = np.ones([n])              # n x 1
     mu = np.ones([n])                   # n x 1
     tau1 = 1 * np.ones([n])                 # n x 1
-    tau2 = 1e-1 * np.ones([n])                 # n x 1
-    sigma = np.zeros([n])                # n x 1
+    tau2 = 1 * np.ones([n])                 # n x 1
+    sigma = 0.05 * np.ones([n])                # n x 1
     alpha = -1*np.ones([n])                # n x 1
     gamma = np.ones([n])                # n x 1
-    d = np.ones([n, n])           # nm x 1
+    d = np.ones([n, n])                 # nm x 1
     g = np.ones([n])                    # n x 1 (little y)
-    delt_w = np.zeros([n])               # n x 1
+    delt_w = np.ones([n])              # n x 1
     # Build x, p, u arrays
     x = np.array([y, tilde_y, mu])
     p = {'tau1': tau1, 'tau2': tau2, 'sigma': sigma, 'alpha': alpha, 'gamma': gamma, 'd': d, 'g': g}
@@ -49,8 +49,8 @@ def evalf(x, t, p, u, E, debug=False):
     :return: delt_x = f(x, p, u)
     """
     # Reshape x (had to flatten to make it work with scipy solver)
-    n = x.shape[0] // 4
-    y, y_tilde, mu, _ = x.reshape(4, n)
+    n = x.shape[0] // 3
+    y, y_tilde, mu = x.reshape(3, n)
 
     delt_true_currency = np.zeros([n])
     delt_eff_currency = np.zeros([n])
@@ -71,6 +71,8 @@ def evalf(x, t, p, u, E, debug=False):
         exports = x_ij[i]
         imports = x_ij[:, i] * y_tilde[i] / y_tilde
         N[i] = np.sum(exports) - np.sum(imports)
+        if debug:
+            print((p['alpha'][i] * N[i] - mu[i]) / p['tau2'][i])
         delt_currency_drift[i] = (p['alpha'][i] * N[i] - mu[i]) / p['tau2'][i]
     #print(delt_true_currency, delt_eff_currency, delt_currency_drift)
 
@@ -79,8 +81,6 @@ def evalf(x, t, p, u, E, debug=False):
         delt_true_currency,
         delt_eff_currency,
         delt_currency_drift,
-        N,
-        #[x_ij[0, 1], x_ij[1, 0]],
         ])
     return x_dot
 

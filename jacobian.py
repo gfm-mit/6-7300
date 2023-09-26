@@ -1,4 +1,4 @@
-from evalf import evalf
+from evalf import evalf, get_E, generate_inputs
 import numpy as np
 
 def finiteDifferenceJacobian(func, x, p, u, delta = 1e-6):
@@ -63,7 +63,8 @@ def evalJacobian(x, p, u):
 
 if __name__ == '__main__':
     n = 3
-    # E = get_E('configs/test.txt')
+    E = get_E('configs/test.txt')
     # t = np.linspace(0, 10, 10)
-    # x, p, u = generate_inputs(n, E)
+    x, p, u = generate_inputs(n, E)
+    finiteDifferenceJacobian(evalf, x, p, u)
     # evalf(x, t, p, u, E)

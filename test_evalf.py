@@ -57,20 +57,19 @@ def plot_evolution(ans, n=3):
 # 3) start with slightly different currency values, should converge
 # 4) test with very small tau2 / tau_mu
 if __name__ == '__main__':
-    T = 20
+    T = 100
     x0 = np.array([
         [1, 1.1], 
         [1, 1.1],
-        [0, 0],
-        [0, 0] # meaningless
+        [0, 0]
         ]).reshape(-1,)
     t = np.linspace(0, T, T)
     E = get_E("configs/test.txt")
     x, p, u = generate_inputs(2, E)
     F = evalf(x0, t, p, u, E, debug=True)
-    F = np.reshape(F, [4, -1]).transpose()
+    F = np.reshape(F, [3, -1]).transpose()
     ans = test(x0, t)[0]
-    ans = einops.rearrange(ans, "t (d n) -> d n t", d=4)
+    ans = einops.rearrange(ans, "t (d n) -> d n t", d=3)
     print(F)
     #print(ans)
     plot_evolution(ans)
