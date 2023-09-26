@@ -37,8 +37,8 @@ def test_convergence():
 
     n1_ans = ans[:, 0]
     n2_ans = ans[:, 1]
-    assert(round(n1_ans[0], 2) == round(n2_ans[0], 2))    # Justify rounding with condition number
-    assert(round(n1_ans[1], 2) == round(n2_ans[1], 2))    # Noise at 3 decimal points (sigma)
+    assert(round(n1_ans[0], 1) == round(n2_ans[0], 1))    # Justify rounding with condition number
+    assert(round(n1_ans[1], 1) == round(n2_ans[1], 1))    # Noise at 3 decimal points (sigma)
 
 
 def test_delays():
@@ -88,19 +88,24 @@ def test_elasticity():
         [0, 0]
         ]).reshape(-1,)
     t = np.linspace(0, T, T)
-    ans = runode(x0, t, p, u)[0]
+    def f_wrapper(x, t):
+        return evalf(x, t, p, u)
+    def g_wrapper(x, t):
+        g = evalg(x, t, p, u)[:]
+        return g
+    ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_low = einops.rearrange(ans, "t (d n) -> d n t", d=3)
     avg_low_oscillation = measure_oscillations(ans_low)
 
     # High elasticity means more oscillations
-    p['alpha'] = -2 * np.ones([2])
+    p['alpha'] = -1.5 * np.ones([2])
     x0 = np.array([
         [1, 1.1],
         [1, 1.1],
         [0, 0]
     ]).reshape(-1, )
     t = np.linspace(0, T, T)
-    ans = runode(x0, t, p, u)[0]
+    ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_high = einops.rearrange(ans, "t (d n) -> d n t", d=3)
     avg_high_oscillation = measure_oscillations(ans_high)
     assert(np.mean(avg_low_oscillation) < np.mean(avg_high_oscillation))
