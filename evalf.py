@@ -17,7 +17,7 @@ def generate_inputs(n):
     gamma = np.ones([n])                # n x 1
     d = np.ones([n, n])                 # nm x 1
     g = np.ones([n])                    # n x 1 (little y)
-    delt_w = np.ones([n])              # n x 1
+    delt_w = np.zeros([n])              # n x 1
     # Build x, p, u arrays
     x = np.array([y, tilde_y, mu])
     p = {'tau1': tau1, 'tau2': tau2, 'sigma': sigma, 'alpha': alpha, 'gamma': gamma, 'd': d, 'g': g}
@@ -52,17 +52,24 @@ def evalf(x, t, p, u):
     n = x.shape[0] // 3
     y, y_tilde, mu = x.reshape(3, n)
 
+    # initialize node quantities
     delt_true_currency = np.zeros([n])
     delt_eff_currency = np.zeros([n])
     N = np.zeros([n])
     delt_currency_drift = np.zeros([n])
+
+    # initialize derived parameter
     g_w = np.sum(p['g'])
+
+    # initialize component quantities
     x_ij = np.zeros([n, n])
     for i in range(n):
         for j in range(n):
             if i != j:
                 x_ij[i, j] = p['g'][i] * p['g'][j] / g_w / p['d'][i, j]
                 x_ij[i, j] *= np.power(y_tilde[i] / y_tilde[j], p['gamma'][i])
+    
+    # update node quantities
     for i in range(n):
         delt_true_currency[i] = mu[i] * y[i] + p['sigma'][i] * y[i] * u[i]
         delt_eff_currency[i] = (y[i] - y_tilde[i]) / p['tau1'][i]
