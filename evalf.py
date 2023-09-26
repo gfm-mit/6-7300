@@ -1,29 +1,6 @@
 import numpy as np
 import einops
 
-def generate_inputs(n):
-    """
-    :param n (int): number of nodes
-    :return: state vector x, parameters p, inputs u
-    """
-    # Placeholders
-    y = np.ones([n])                    # n x 1
-    tilde_y = np.ones([n])              # n x 1
-    mu = np.ones([n])                   # n x 1
-    tau1 = 1 * np.ones([n])                 # n x 1
-    tau2 = 1 * np.ones([n])                 # n x 1
-    sigma = 1e-3 * np.ones([n])                # n x 1
-    alpha = -1*np.ones([n])                # n x 1
-    gamma = np.ones([n])                # n x 1
-    d = np.ones([n, n])                 # nm x 1
-    g = np.ones([n])                    # n x 1 (little y)
-    delt_w = np.zeros([n])              # n x 1
-    # Build x, p, u arrays
-    x = np.array([y, tilde_y, mu])
-    p = {'tau1': tau1, 'tau2': tau2, 'sigma': sigma, 'alpha': alpha, 'gamma': gamma, 'd': d, 'g': g}
-    u = np.array(delt_w)
-    return x, p, u
-
 
 def evalf(x, t, p, u):
     """
@@ -86,6 +63,7 @@ def evalf(x, t, p, u):
         ])
     return x_dot
 
+
 def evalg(x, t, p, u):
     n = x.shape[0] // 3
     y, y_tilde, mu = x.reshape(3, n)
@@ -94,11 +72,3 @@ def evalg(x, t, p, u):
         0 * y_tilde,
         0 * mu
         ]))
-
-if __name__ == '__main__':
-    n = 2
-    x, p, u = generate_inputs(n)
-    x0 = np.reshape(x, [-1])
-    dx = evalf(x0, None, p, u)
-    dx = einops.rearrange(dx, "(d n) -> n d", d=3)
-    print(dx)
