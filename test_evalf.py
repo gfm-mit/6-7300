@@ -28,11 +28,17 @@ def test_convergence():
         [0, 0]
         ]).reshape(-1,)
     t = np.linspace(0, T, T)
-    ans = runode(x0, t, p, u)[0][999].reshape(3, 2)
+    def f_wrapper(x, t):
+        return evalf(x, t, p, u)
+    def g_wrapper(x, t):
+        g = evalg(x, t, p, u)[:]
+        return g
+    ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)[999].reshape(3, 2)
+
     n1_ans = ans[:, 0]
     n2_ans = ans[:, 1]
-    assert(round(n1_ans[0], 13) == round(n2_ans[0], 13))    # Justify rounding with condition number
-    assert(round(n1_ans[1], 13) == round(n2_ans[1], 13))
+    assert(round(n1_ans[0], 2) == round(n2_ans[0], 2))    # Justify rounding with condition number
+    assert(round(n1_ans[1], 2) == round(n2_ans[1], 2))    # Noise at 3 decimal points (sigma)
 
 
 def test_delays():
@@ -121,7 +127,7 @@ def generate_inputs(n):
     mu = np.ones([n])                   # n x 1
     tau1 = 1 * np.ones([n])             # n x 1
     tau2 = 1 * np.ones([n])             # n x 1
-    sigma = 0.05 * np.ones([n])         # n x 1
+    sigma = 1e-3 * np.ones([n])         # n x 1
     alpha = -1*np.ones([n])             # n x 1
     gamma = np.ones([n])                # n x 1
     d = np.ones([n, n])                 # nm x 1
@@ -157,13 +163,11 @@ if __name__ == '__main__':
         return evalf(x, t, p, u)
     def g_wrapper(x, t):
         g = evalg(x, t, p, u)[:]
-        print(g.shape)
         return g
     G = evalf(x0, t, p, u)
-    print(G)
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans = einops.rearrange(ans, "t (d n) -> d n t", d=3)
     #print(F)
     #print(ans)
-    #plot_evolution(ans)
+    plot_evolution(ans)
 
