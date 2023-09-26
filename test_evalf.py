@@ -52,7 +52,12 @@ def test_delays():
         [0, 0]
     ]).reshape(-1, )
     t = np.linspace(0, T, T)
-    ans_sm = runode(x0, t, p, u)[0]
+    def f_wrapper(x, t):
+        return evalf(x, t, p, u)
+    def g_wrapper(x, t):
+        g = evalg(x, t, p, u)[:]
+        return g
+    ans_sm = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_sm = einops.rearrange(ans_sm, "t (d n) -> d n t", d=3)
     avg_sm_oscillation = measure_oscillations(ans_sm)
 
@@ -65,7 +70,7 @@ def test_delays():
         [0, 0]
     ]).reshape(-1, )
     t = np.linspace(0, T, T)
-    ans_lg = runode(x0, t, p, u)[0]
+    ans_lg = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_lg = einops.rearrange(ans_lg, "t (d n) -> d n t", d=3)
     avg_lg_oscillation = measure_oscillations(ans_lg)
     assert(np.mean(avg_sm_oscillation) < np.mean(avg_lg_oscillation))
