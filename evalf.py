@@ -1,4 +1,5 @@
 import numpy as np
+import einops
 
 
 def evalf(x, t, p, u):
@@ -47,7 +48,7 @@ def evalf(x, t, p, u):
     
     # update node quantities
     for i in range(n):
-        delt_true_currency[i] = mu[i] * y[i] + p['sigma'][i] * y[i] * u[i]
+        delt_true_currency[i] = mu[i] * y[i]
         delt_eff_currency[i] = (y[i] - y_tilde[i]) / p['tau1'][i]
         exports = x_ij[i]
         imports = x_ij[:, i] * y_tilde[i] / y_tilde
@@ -62,3 +63,12 @@ def evalf(x, t, p, u):
         ])
     return x_dot
 
+
+def evalg(x, t, p, u):
+    n = x.shape[0] // 3
+    y, y_tilde, mu = x.reshape(3, n)
+    return np.diag(np.concatenate([
+        p['sigma'] * y,
+        0 * y_tilde,
+        0 * mu
+        ]))
