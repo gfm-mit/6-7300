@@ -1,4 +1,4 @@
-from evalf import evalf, generate_inputs
+from test_evalf import evalf, generate_inputs
 import numpy as np
 
 
