@@ -1,17 +1,19 @@
-from evalf import evalf, get_E, generate_inputs
+from evalf import evalf, generate_inputs
 import numpy as np
 
 
 def finiteDifferenceJacobian(func, x, p, u, delta = 1e-6):
-    F0 = func(x, p, u)
+    t = None
+    x = x.reshape(-1,)
+    F0 = func(x, t, p, u)
 
     J = np.zeros((F0.shape[0], x.shape[0])).astype(np.float64)
 
     for k in range(x.shape[0]):
         eps = np.zeros(x.shape[0])
         eps[k] = delta
-        Fk = func(x + eps, p, u)
-        J[:,k] = (Fk - F0)/delta
+        Fk = func(x + eps, t, p, u)
+        J[:, k] = (Fk - F0)/delta
 
     return J
 
@@ -64,9 +66,7 @@ def evalJacobian(x, p, u):
 
 
 if __name__ == '__main__':
-    n = 3
-    E = get_E('configs/test.txt')
-    # t = np.linspace(0, 10, 10)
-    x, p, u = generate_inputs(n, E)
-    finiteDifferenceJacobian(evalf, x, p, u)
-    # evalf(x, t, p, u, E)
+    n = 2
+    x, p, u = generate_inputs(n)
+    J = finiteDifferenceJacobian(evalf, x, p, u)
+    print(J)
