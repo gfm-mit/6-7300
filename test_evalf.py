@@ -22,9 +22,10 @@ def test_symmetric_equilibrium():
 def test_convergence():
     T = 1000
     x, p, u = generate_inputs(2)
+    p['sigma'] = np.zeros([2])
     x0 = np.array([
-        [1, 1.1],
-        [1, 1.1],
+        [1, 1.01],
+        [1, 1.01],
         [0, 0]
         ]).reshape(-1,)
     t = np.linspace(0, T, T)
@@ -33,12 +34,15 @@ def test_convergence():
     def g_wrapper(x, t):
         g = evalg(x, t, p, u)[:]
         return g
-    ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)[999].reshape(3, 2)
+    ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
+    ans_plot = einops.rearrange(ans, "t (d n) -> d n t", d=3)
+    plot_evolution(ans_plot)
 
+    ans = ans[999].reshape(3, 2)
     n1_ans = ans[:, 0]
     n2_ans = ans[:, 1]
-    assert(round(n1_ans[0], 1) == round(n2_ans[0], 1))    # Justify rounding with condition number
-    assert(round(n1_ans[1], 1) == round(n2_ans[1], 1))    # Noise at 3 decimal points (sigma)
+    assert(round(n1_ans[0], 13) == round(n2_ans[0], 13))    # Justify rounding with condition number
+    assert(round(n1_ans[1], 13) == round(n2_ans[1], 13))    # Noise at 2 decimal points
 
 
 def test_delays():
@@ -59,6 +63,7 @@ def test_delays():
         return g
     ans_sm = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_sm = einops.rearrange(ans_sm, "t (d n) -> d n t", d=3)
+    plot_evolution(ans_sm)
     avg_sm_oscillation = measure_oscillations(ans_sm)
 
     # Large time delay should converge more slowly
@@ -72,6 +77,7 @@ def test_delays():
     t = np.linspace(0, T, T)
     ans_lg = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_lg = einops.rearrange(ans_lg, "t (d n) -> d n t", d=3)
+    plot_evolution(ans_lg)
     avg_lg_oscillation = measure_oscillations(ans_lg)
     assert(np.mean(avg_sm_oscillation) < np.mean(avg_lg_oscillation))
 
@@ -95,6 +101,7 @@ def test_elasticity():
         return g
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_low = einops.rearrange(ans, "t (d n) -> d n t", d=3)
+    plot_evolution(ans_low)
     avg_low_oscillation = measure_oscillations(ans_low)
 
     # High elasticity means more oscillations
@@ -107,15 +114,16 @@ def test_elasticity():
     t = np.linspace(0, T, T)
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_high = einops.rearrange(ans, "t (d n) -> d n t", d=3)
+    plot_evolution(ans_high)
     avg_high_oscillation = measure_oscillations(ans_high)
     assert(np.mean(avg_low_oscillation) < np.mean(avg_high_oscillation))
 
 
-def measure_oscillations(ans):
+def measure_oscillations(ans, start=80):
     oscillation = []
     for i in range(1, 10):
-        t_x = ans[:, :, 80 + i]
-        t_xplus10 = ans[:, :, (80 + i) + 10]
+        t_x = ans[:, :, start + i]
+        t_xplus10 = ans[:, :, (start + i) + 10]
         oscillation.append(abs(t_x - t_xplus10))
     avg_oscilation = sum(oscillation) / len(oscillation)
     return avg_oscilation
