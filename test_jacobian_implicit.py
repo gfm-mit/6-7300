@@ -3,6 +3,7 @@ from test_evalf import evalf, generate_inputs
 from jacobian import evalJacobian
 from sys import getsizeof
 import matplotlib.pyplot as plt
+import time
 
 
 def measure_mem():
@@ -27,12 +28,32 @@ def measure_mem():
     return
 
 
-def test_speed():
-    x, p, u = generate_inputs(2)
-
+def measure_speed():
+    t = None
+    f_time, J_time = [], []
+    for i in range(2, 100):
+        x, p, u = generate_inputs(i)
+        x = x.reshape(-1, )
+        # Size of output of f (x2?)
+        tic = time.time()
+        f = evalf(x, t, p, u)
+        toc = time.time()
+        f_time.append(toc - tic)
+        # Size of Jacobian
+        tic = time.time()
+        J = evalJacobian(x, p, u)
+        toc = time.time()
+        J_time.append(toc - tic)
+    plt.plot(f_time, label="Implicit Jacobian")
+    plt.plot(J_time, label="Explicit Jacobian")
+    plt.legend()
+    plt.xlabel("Size of input")
+    plt.ylabel("Time to compute Jacobian (s)")
+    plt.title("Speed improvement using implicit Jacobian")
+    plt.savefig('implicit_jacobian_speed.png', bbox_inches='tight')
     return
 
 
 if __name__ == '__main__':
-    measure_mem()
-
+    #measure_mem()
+    measure_speed()
