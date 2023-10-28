@@ -31,9 +31,9 @@ def tgcr(f, b, x0, p_in, u, tolrGCR, MaxItersGCR):
     Ap_full = []
     while (r_norms[k] / r_norms[0] > tolrGCR) and (k < MaxItersGCR):
         k += 1
-        # Use the residual as the first guess for the ne search direction and computer its image
+        # Use the residual as the first guess for the ne search direction and compute its image
         p = r.copy()
-        Ap = f(evalf, x0, p_in, u, r).dot(p)
+        Ap = f(evalf, x0, p_in, u, p)
 
         # Make the new Ap vector orthogonal to the previous Ap vectors,
         # and the p vectors A^TA orthogonal to the previous p vectors.
