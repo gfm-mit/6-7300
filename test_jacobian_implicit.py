@@ -7,6 +7,22 @@ import time
 import numpy as np
 
 
+def test_jacobian_implicit():
+    n = 2
+    x, p, u = generate_inputs(n)
+    r = x.copy()
+    r[1] = [0.5, 0.5]
+    r = r.reshape(-1, )
+    x = x.reshape(-1, )
+    J = evalJacobian(x, p, u)
+    Jr_explicit = J.dot(r)
+    print(Jr_explicit)
+    x = x.reshape(-1, )
+    Jr_implicit = jf_product(evalf, x, p, u, r, eps=1e-10)
+    print(Jr_implicit)
+    return
+
+
 def measure_eps_effect():
     for eps in range(-1, -17, -1):
         n = 2
@@ -70,6 +86,7 @@ def measure_speed():
 
 
 if __name__ == '__main__':
+    test_jacobian_implicit()
     #measure_mem()
     #measure_speed()
-    measure_eps_effect()
+    #measure_eps_effect()
