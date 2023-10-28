@@ -3,7 +3,7 @@ from evalf import evalf
 from test_evalf import generate_inputs
 
 
-def tgcr(f, b, x0, p_in, u, tolrGCR, MaxItersGCR):
+def tgcr(f, b, x0, p_in, u, tolrGCR, MaxItersGCR, eps=1e-5):
     """
     Generalized conjugate residual method for solving Ax = b
     INPUTS
@@ -33,7 +33,7 @@ def tgcr(f, b, x0, p_in, u, tolrGCR, MaxItersGCR):
         k += 1
         # Use the residual as the first guess for the ne search direction and compute its image
         p = r.copy()
-        Ap = f(evalf, x0, p_in, u, p)
+        Ap = f(evalf, x0, p_in, u, p, eps=eps)
 
         # Make the new Ap vector orthogonal to the previous Ap vectors,
         # and the p vectors A^TA orthogonal to the previous p vectors.

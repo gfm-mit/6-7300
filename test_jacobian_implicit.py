@@ -4,6 +4,21 @@ from jacobian import evalJacobian
 from sys import getsizeof
 import matplotlib.pyplot as plt
 import time
+import numpy as np
+
+
+def measure_eps_effect():
+    for eps in range(-1, -17, -1):
+        n = 2
+        x, p, u = generate_inputs(n)
+        x = x.reshape(-1, )
+        b = np.array([[0.5, 1.5],             # y, true nodal
+                      [0.75, 1.25],           # tilde_y, effective currency
+                      [1, 1]]).reshape(-1, )  # mu, currency drift
+        # tgcr(f, b, x0, p_in, u, tolrGCR, MaxItersGCR, eps=1e-5)
+        x, r_norms = tgcr(jf_product, b, x, p, u, 10e-5, 100, eps=eps)
+        print(r_norms)
+    return
 
 
 def measure_mem():
@@ -56,4 +71,5 @@ def measure_speed():
 
 if __name__ == '__main__':
     #measure_mem()
-    measure_speed()
+    #measure_speed()
+    measure_eps_effect()
