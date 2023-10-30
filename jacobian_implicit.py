@@ -3,7 +3,7 @@ from evalf import evalf
 from test_evalf import generate_inputs
 
 
-def tgcr(f, b, x0, p_in, u, tolrGCR, MaxItersGCR, eps=1e-5):
+def tgcr(f, b, x0, params, u, tolrGCR, MaxItersGCR, eps=1e-5):
     """
     Generalized conjugate residual method for solving Ax = b
     INPUTS
@@ -33,7 +33,7 @@ def tgcr(f, b, x0, p_in, u, tolrGCR, MaxItersGCR, eps=1e-5):
         k += 1
         # Use the residual as the first guess for the ne search direction and compute its image
         p = r.copy()
-        Ap = f(evalf, x0, p_in, u, p, eps=eps)
+        Ap = f(x0, params, u, p, eps=eps)
 
         # Make the new Ap vector orthogonal to the previous Ap vectors,
         # and the p vectors A^TA orthogonal to the previous p vectors.
@@ -72,17 +72,18 @@ def tgcr(f, b, x0, p_in, u, tolrGCR, MaxItersGCR, eps=1e-5):
 
     if r_norms[k] > tolrGCR * r_norms[0]:
         print('GCR did NOT converge! Maximum Number of Iterations reached')
-        x = None==8
+        x = None
+    else:
         print(f'GCR converged in {k} iterations')
 
     r_norms = np.array(r_norms) / r_norms[0]
     return x, r_norms
 
 
-def jf_product(f, x0, p, u, r, eps=1e-5):
-    t = None
-    f1 = f(x0 + (eps * r), t, p, u)
-    f0 = f(x0, t, p, u)
+def jf_product(x0, params, u, r, eps=1e-5):
+    # hessian vector product, where evalf is already the jacobian
+    f1 = evalf(x0 + (eps * r), t=None, p=params, u=None)
+    f0 = evalf(x0, t=None, p=params, u=None)
     Jr = (1 / eps) * (f1 - f0)
     return Jr
 
@@ -90,15 +91,9 @@ def jf_product(f, x0, p, u, r, eps=1e-5):
 if __name__ == '__main__':
     n = 2
     x, p, u = generate_inputs(n)
-    # x = [y, tilde_y, mu]
-    # solving for tilde_y
-    r = x.copy()
-    r[1] = [0.5, 0.5]
-    r = r.reshape(-1,)
     x = x.reshape(-1,)
-    prod = jf_product(evalf, x, p, u, r)
     b = np.array([[0.5, 1.5],               # y, true nodal
                  [0.75, 1.25],              # tilde_y, effective currency
                  [1, 1]]).reshape(-1, )     # mu, currency drift
-    x, r_norms = tgcr(jf_product, b, x, p, u, 10e-2, 100)
+    x, r_norms = tgcr(jf_product, b, x, p, u, tolrGCR=10e-2, MaxItersGCR=100)
     print(x)
