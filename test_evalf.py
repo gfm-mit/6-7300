@@ -147,7 +147,7 @@ def generate_inputs(n):
     tau2 = 1 * np.ones([n])             # n x 1
     sigma = 1e-3 * np.ones([n])         # n x 1
     alpha = -1*np.ones([n])             # n x 1
-    gamma2 = np.ones([n])                # n x 1
+    gamma2 = .5 * np.ones([n])          # n x 1
     d = np.ones([n, n])                 # nm x 1
     g = np.ones([n])                    # n x 1 (little y)
     gw = np.sum(g)
@@ -157,6 +157,19 @@ def generate_inputs(n):
     p = {'tau1': tau1, 'tau2': tau2, 'sigma': sigma, 'alpha': alpha, 'gamma2': gamma2, 'd': d, 'g': g, 'gw':gw}
     u = np.array(delt_w)
     return x, p, u
+
+def generate_random_parameters(n):
+    """
+    :param n (int): number of nodes
+    :return: state vector x, parameters p, inputs u
+    """
+    x, p, u = generate_inputs(n)
+    p['d'] = np.exp(np.random.uniform(-1, 1, size=[n, n]))
+    return x, p, u
+
+def generate_parameter_ranges(n, samples):
+    for _ in range(samples):
+        yield generate_random_parameters(n)
 
   
 # test cases, all with two countries:
