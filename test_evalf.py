@@ -140,6 +140,9 @@ def generate_inputs(n):
     :return: state vector x, parameters p, inputs u
     """
     # Placeholders
+    # y = 10000 * np.random.random([n])                    # n x 1
+    # tilde_y = y                    # n x 1
+    # tilde_y = 10000 * np.random.random([n])                    # n x 1
     y = np.ones([n])                    # n x 1
     tilde_y = np.ones([n])              # n x 1
     mu = np.ones([n])                   # n x 1
@@ -147,8 +150,9 @@ def generate_inputs(n):
     tau2 = 1 * np.ones([n])             # n x 1
     sigma = 1e-3 * np.ones([n])         # n x 1
     alpha = -1*np.ones([n])             # n x 1
-    gamma2 = .5 * np.ones([n])          # n x 1
+    gamma2 = 0.5 * np.ones([n])          # n x 1
     d = np.ones([n, n])                 # nm x 1
+    # d = 1000 * np.random.random([n, n])                 # nm x 1
     g = np.ones([n])                    # n x 1 (little y)
     gw = np.sum(g)
     delt_w = np.zeros([n])              # n x 1
