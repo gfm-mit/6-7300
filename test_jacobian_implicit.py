@@ -37,7 +37,7 @@ def measure_eps_effect():
             np.geomspace(.75, 1.25, n), # tilde_y, effective currency
             np.ones(n),                 # mu, currency drift
             ]).reshape(-1, )
-        x, r_norms = tgcr(jf_product, b, x, p, u, tolrGCR=1e-12, MaxItersGCR=100, eps=eps)
+        x, r_norms = tgcr(jf_product, b, x, p, u, tolrGCR=1e-4, MaxItersGCR=100, eps=eps)
         #plt.plot(r_norms, label=eps, linewidth=10, alpha=0.5)
         last_norm = r_norms[-1]
         if np.isnan(last_norm):
@@ -104,6 +104,7 @@ def measure_mem():
     plt.yscale('log')
     plt.title("Memory improvement using implicit Jacobian")
     plt.savefig('implicit_jacobian_mem.png', bbox_inches='tight')
+    plt.show()
     return
 
 
@@ -132,6 +133,7 @@ def measure_speed():
     plt.yscale('log')
     plt.title("Speed improvement using implicit Jacobian")
     plt.savefig('implicit_jacobian_speed.png', bbox_inches='tight')
+    plt.show()
     return
 
 
