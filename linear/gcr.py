@@ -2,36 +2,12 @@ import numpy as np
 import pandas as pd
 # import scipy
 from itertools import product
-from evalf import evalf
-from test_evalf import generate_inputs
-from jacobian import finiteDifferenceJacobian, evalJacobian
+from domain_specific.evalf import evalf
+from domain_specific.jacobian import finiteDifferenceJacobian, evalJacobian
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-def getIterationBoundCond(J, tol = 1e-6):
-    # Chebyshev bound   
-    cond = np.linalg.cond(J)
-    temp = ((cond ** 0.5)-1)/(cond ** 0.5 + 1)
-    return (np.log(tol) - np.log(2))/(np.log(temp))
-
-def getIterationBoundGirshgorin(J, tol = 1e-6):
-    # Girshgorin bound
-    diag = np.diag(J)
-    temp = np.abs(np.sum(J - np.diag(diag), axis = 1))
-    lmax = np.max(diag + temp)
-    lmin = max(0.000001, np.min(diag - temp))
-    cond = lmax/lmin
-    temp = ((cond ** 0.5)-1)/(cond ** 0.5 + 1)
-    # print(J)
-    # print(diag, J - np.diag(diag), np.sum(J - np.diag(diag), axis = 0), temp, lmax, lmin, cond)
-    return (np.log(tol) - np.log(2))/(np.log(temp))
-
-def getIterationBoundEigen(J, tol = 1e-6):
-    # Different Eigen Values bound
-    ls, _ = np.linalg.eig(J)
-    return np.unique(ls).shape[0]
-
-def gcrSolver(A, b, tolrGCR = 1e-4, MaxItersGCR = 100000):
+def gcrSolver(A, b, tolrGCR = 1e-4, MaxItersGCR = 100_000):
     """
     Generalized conjugate residual method for solving Ax = b
     INPUTS
@@ -97,47 +73,14 @@ def gcrSolver(A, b, tolrGCR = 1e-4, MaxItersGCR = 100000):
 
     if r_norms[k] > tolrGCR * r_norms[0]:
         print('GCR did NOT converge! Maximum Number of Iterations reached. Returning the closest solution found so far')
-        x = None
+        #x = None
     else:
         print(f'GCR converged in {k} iterations')
 
     r_norms = np.array(r_norms) / r_norms[0]
     return x, r_norms, k
 
-def testSamples(Js, names):
-    assert len(Js) == len(names)
-
-    res = []
-
-    for i in range(len(Js)):
-        J = Js[i]
-        b = np.random.random(J.shape[0])
-        bound1 = getIterationBoundCond(J)
-        bound2 = getIterationBoundGirshgorin(J)
-        # bound3 = getIterationBoundEigen(J)
-        _, _, k = gcrSolver(J, b)
-        # res.append({'name': names[i],  'Girsh_Bound': bound2})
-        res.append({'name': names[i], 'Cond_Bound': bound1, 'Girsh_Bound': bound2, 'Actual #Iterations': k})
-        # res.append({'name': names[i], 'Cond_Bound': bound1, 'Girsh_Bound': bound2, 'Eigen_Bound': bound3, 'Actual #Iterations': k})
-
-    return pd.DataFrame(res)
-
-
-if __name__ == '__main__':
-    # names = ['2', '3', '4', '5']
-    names = []
-    Js = []
-    for i in range(30, 31):
-        x, p, u = generate_inputs(i)
-        J = finiteDifferenceJacobian(evalf, x, p, u, 1e-6)
-        names.append(str(i))
-        Js.append(J)
-        sns.heatmap(J,center = 0)
-        plt.show()
-        print(np.linalg.cond(J))
-
-    # print(Js)
-
-    res = testSamples(Js, names)
-
-    print(res)
+def gcrWrapper(x0, p, u, tolrGCR = 1e-4, MaxItersGCR = 100_000):
+    J = evalJacobian(x0, p, u)
+    f = evalf(x0, t=None, p=p, u=u)
+    return gcrSolver(A=J, b=-f, tolrGCR=tolrGCR, MaxItersGCR=MaxItersGCR)

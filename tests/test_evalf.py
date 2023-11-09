@@ -1,6 +1,7 @@
 from scipy.integrate import odeint
 import numpy as np
-from evalf import evalf, evalg
+from domain_specific.evalf import evalf, evalg
+from domain_specific.x0 import generate_inputs
 import matplotlib.pyplot as plt
 import einops
 from plot_util import plot_evolution
@@ -36,7 +37,7 @@ def test_convergence():
         return g
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_plot = einops.rearrange(ans, "t (d n) -> d n t", d=3)
-    plot_evolution(ans_plot)
+    #plot_evolution(ans_plot)
 
     ans = ans[999].reshape(3, 2)
     n1_ans = ans[:, 0]
@@ -63,7 +64,7 @@ def test_delays():
         return g
     ans_sm = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_sm = einops.rearrange(ans_sm, "t (d n) -> d n t", d=3)
-    plot_evolution(ans_sm)
+    #plot_evolution(ans_sm)
     avg_sm_oscillation = measure_oscillations(ans_sm)
 
     # Large time delay should converge more slowly
@@ -77,7 +78,7 @@ def test_delays():
     t = np.linspace(0, T, T)
     ans_lg = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_lg = einops.rearrange(ans_lg, "t (d n) -> d n t", d=3)
-    plot_evolution(ans_lg)
+    #plot_evolution(ans_lg)
     avg_lg_oscillation = measure_oscillations(ans_lg)
     assert(np.mean(avg_sm_oscillation) < np.mean(avg_lg_oscillation))
 
@@ -101,7 +102,7 @@ def test_elasticity():
         return g
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_low = einops.rearrange(ans, "t (d n) -> d n t", d=3)
-    plot_evolution(ans_low)
+    #plot_evolution(ans_low)
     avg_low_oscillation = measure_oscillations(ans_low)
 
     # High elasticity means more oscillations
@@ -114,7 +115,7 @@ def test_elasticity():
     t = np.linspace(0, T, T)
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_high = einops.rearrange(ans, "t (d n) -> d n t", d=3)
-    plot_evolution(ans_high)
+    #plot_evolution(ans_high)
     avg_high_oscillation = measure_oscillations(ans_high)
     assert(np.mean(avg_low_oscillation) < np.mean(avg_high_oscillation))
 
@@ -133,48 +134,6 @@ def runode(x0, t, p, u):
     ans = odeint(evalf, x0, t, args=(p, u), full_output=True)
     return ans
 
-
-def generate_inputs(n):
-    """
-    :param n (int): number of nodes
-    :return: state vector x, parameters p, inputs u
-    """
-    # Placeholders
-    # y = 10000 * np.random.random([n])                    # n x 1
-    # tilde_y = y                    # n x 1
-    # tilde_y = 10000 * np.random.random([n])                    # n x 1
-    y = np.ones([n])                    # n x 1
-    tilde_y = np.ones([n])              # n x 1
-    mu = np.ones([n])                   # n x 1
-    tau1 = 1 * np.ones([n])             # n x 1
-    tau2 = 1 * np.ones([n])             # n x 1
-    sigma = 1e-3 * np.ones([n])         # n x 1
-    alpha = -1*np.ones([n])             # n x 1
-    gamma2 = 0.5 * np.ones([n])          # n x 1
-    d = np.ones([n, n])                 # nm x 1
-    # d = 1000 * np.random.random([n, n])                 # nm x 1
-    g = np.ones([n])                    # n x 1 (little y)
-    gw = np.sum(g)
-    delt_w = np.zeros([n])              # n x 1
-    # Build x, p, u arrays
-    x = np.array([y, tilde_y, mu])
-    p = {'tau1': tau1, 'tau2': tau2, 'sigma': sigma, 'alpha': alpha, 'gamma2': gamma2, 'd': d, 'g': g, 'gw':gw}
-    u = np.array(delt_w)
-    return x, p, u
-
-def generate_random_parameters(n):
-    """
-    :param n (int): number of nodes
-    :return: state vector x, parameters p, inputs u
-    """
-    x, p, u = generate_inputs(n)
-    p['d'] = np.exp(np.random.uniform(-1, 1, size=[n, n]))
-    return x, p, u
-
-def generate_parameter_ranges(n, samples):
-    for _ in range(samples):
-        yield generate_random_parameters(n)
-
   
 # test cases, all with two countries:
 # 1) all equal (GF)
@@ -184,26 +143,28 @@ def generate_parameter_ranges(n, samples):
 # 5) with large alpha, shouldn't ring (JR)
 # 6) with small alpha, should ring (JR)
 if __name__ == '__main__':
-    T = 100
-    x0 = np.array([
-        [1, 1.1], 
-        [1, 1.1],
-        [0, 0]
-        ]).reshape(-1,)
-    t = np.linspace(0, T, T)
-    x, p, u = generate_inputs(2)
-    F = evalf(x0, t, p, u)
-    F = np.reshape(F, [3, -1]).transpose()
-    #ans = runode(x0, t)[0]
-    def f_wrapper(x, t):
-        return evalf(x, t, p, u)
-    def g_wrapper(x, t):
-        g = evalg(x, t, p, u)[:]
-        return g
-    G = evalf(x0, t, p, u)
-    ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
-    ans = einops.rearrange(ans, "t (d n) -> d n t", d=3)
-    #print(F)
-    #print(ans)
-    plot_evolution(ans)
+    test_convergence()
+    if False:
+        T = 100
+        x0 = np.array([
+            [1, 1.1], 
+            [1, 1.1],
+            [0, 0]
+            ]).reshape(-1,)
+        t = np.linspace(0, T, T)
+        x, p, u = generate_inputs(2)
+        F = evalf(x0, t, p, u)
+        F = np.reshape(F, [3, -1]).transpose()
+        #ans = runode(x0, t)[0]
+        def f_wrapper(x, t):
+            return evalf(x, t, p, u)
+        def g_wrapper(x, t):
+            g = evalg(x, t, p, u)[:]
+            return g
+        G = evalf(x0, t, p, u)
+        ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
+        ans = einops.rearrange(ans, "t (d n) -> d n t", d=3)
+        #print(F)
+        #print(ans)
+        plot_evolution(ans)
 

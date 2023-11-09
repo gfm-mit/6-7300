@@ -1,4 +1,3 @@
-from test_evalf import evalf, generate_inputs
 import numpy as np
 
 
@@ -16,6 +15,7 @@ def finiteDifferenceJacobian(func, x, p, u, delta = 1e-6):
         J[:, k] = (Fk - F0)/delta
 
     return J
+
 
 def evalJacobian(x, p, u):
 
@@ -66,9 +66,5 @@ def evalJacobian(x, p, u):
 
     return J 
 
-
-if __name__ == '__main__':
-    n = 2
-    x, p, u = generate_inputs(n)
-    J = finiteDifferenceJacobian(evalf, x, p, u)
-    print(J)
+def getPreconditioner(J):
+    return np.diag(1 / np.diag(J))
