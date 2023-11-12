@@ -25,6 +25,9 @@ def evalf(x, t, p, u):
     [delt_w]
     :return: delt_x = f(x, p, u)
     """
+    assert isinstance(x, np.ndarray)
+    assert t is None
+    assert isinstance(p, dict)
     # Reshape x (had to flatten to make it work with scipy solver)
     n = x.shape[0] // 3
     y, y_tilde, mu = x.reshape(3, n)

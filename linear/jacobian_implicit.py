@@ -1,9 +1,8 @@
 import numpy as np
-from evalf import evalf
-from test_evalf import generate_inputs
+from domain_specific.evalf import evalf
 
 
-def tgcr(f, b, x0, params, u, tolrGCR, MaxItersGCR, eps=1e-5):
+def tgcr_implicit(f, b, x0, params, u, tolrGCR=1e-4, MaxItersGCR=100_000, eps=1e-5):
     """
     Generalized conjugate residual method for solving Ax = b
     INPUTS
@@ -70,9 +69,10 @@ def tgcr(f, b, x0, params, u, tolrGCR, MaxItersGCR, eps=1e-5):
         # Save the norm of r
         r_norms.append(np.linalg.norm(r, 2))
 
+
     if r_norms[k] > tolrGCR * r_norms[0]:
         print('GCR did NOT converge! Maximum Number of Iterations reached')
-        x = None
+        #x = None
     else:
         print(f'GCR converged in {k} iterations')
 
@@ -87,13 +87,6 @@ def jf_product(x0, params, u, r, eps=1e-5):
     Jr = (1 / eps) * (f1 - f0)
     return Jr
 
-
-if __name__ == '__main__':
-    n = 2
-    x, p, u = generate_inputs(n)
-    x = x.reshape(-1,)
-    b = np.array([[0.5, 1.5],               # y, true nodal
-                 [0.75, 1.25],              # tilde_y, effective currency
-                 [1, 1]]).reshape(-1, )     # mu, currency drift
-    x, r_norms = tgcr(jf_product, b, x, p, u, tolrGCR=10e-2, MaxItersGCR=100)
-    print(x)
+def gcr_implicit_wrapper(x0, p, u, tolrGCR=1e-4, MaxItersGCR=100_000, eps=1e-5):
+    f = evalf(x0, t=None, p=p, u=u)
+    return tgcr_implicit(jf_product, b=-f, x0=x0, params=p, u=u, tolrGCR=tolrGCR, MaxItersGCR=MaxItersGCR, eps=eps)
