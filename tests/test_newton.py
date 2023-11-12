@@ -23,7 +23,7 @@ def test_simple_case_converges():
     f = evalf(x1, t=None, p=p, u=u)
 
     error = np.linalg.norm(f) 
-    assert error < 1e-12, error
+    assert error < 1e-12, f
 
 def test_simple_case_julia():
     x0, p, u = generate_inputs(3)
