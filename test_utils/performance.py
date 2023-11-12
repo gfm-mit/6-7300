@@ -70,7 +70,8 @@ def measure_eps_effect_one_step(epsilons, n=10):
         x0 = x0.reshape(-1, )
         f = evalf(x0, t, p, u)
         # Compute perturbation
-        dx0 = np.random.randn(*x0.shape) * eps
+        dx0 = np.random.randn(*x0.shape)
+        dx0 = dx0 / np.linalg.norm(dx0) * eps
 
         # Compute f(x0 + dx0)
         f_perturbed = evalf(x0 + dx0, t, p, u)
@@ -92,6 +93,7 @@ def memray_eval(f):
         report_progress=True,
         num_largest=999,
     )
+    pathlib.Path('output_file.bin').unlink()
     return stats.total_memory_allocated, stats.peak_memory_allocated
 
 def measure_mem(ns):
