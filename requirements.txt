@@ -1,9 +1,10 @@
-scipy
-matplotlib
 einops
-pytest
-sdeint
-pandas
-numpy
-seaborn
+matplotlib
 memray
+numpy
+pandas
+pytest
+scipy
+sdeint
+seaborn
+tqdm
