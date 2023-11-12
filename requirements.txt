@@ -6,3 +6,4 @@ sdeint
 pandas
 numpy
 seaborn
+memray
