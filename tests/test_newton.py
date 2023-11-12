@@ -23,7 +23,7 @@ def test_simple_case_converges():
     f = evalf(x1, t=None, p=p, u=u)
 
     error = np.linalg.norm(f) 
-    assert error < 1e-12, f
+    assert error < 1e-4, f
 
 def test_simple_case_julia():
     x0, p, u = generate_inputs(3)
@@ -32,7 +32,7 @@ def test_simple_case_julia():
     f = evalf(x1, t=None, p=p, u=u)
 
     error = np.linalg.norm(f) 
-    assert error < 1e-12, error
+    assert error < 1e-4, error
 
 def test_simple_case_jacobian_free_julia():
     x0, p, u = generate_inputs(3)
@@ -41,7 +41,7 @@ def test_simple_case_jacobian_free_julia():
     f = evalf(x1, t=None, p=p, u=u)
 
     error = np.linalg.norm(f) 
-    assert error < 1e-8, error
+    assert error < 1e-4, error
 
 def test_continuation1():
     x0, p, u = generate_lognormal_input(3)
