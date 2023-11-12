@@ -3,3 +3,5 @@ matplotlib
 einops
 pytest
 sdeint
+pandas
+numpy
