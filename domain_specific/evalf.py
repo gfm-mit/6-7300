@@ -26,7 +26,7 @@ def evalf(x, t, p, u):
     :return: delt_x = f(x, p, u)
     """
     assert isinstance(x, np.ndarray)
-    assert t is None
+    assert t is None or isinstance(t, float)
     assert isinstance(p, dict)
     # Reshape x (had to flatten to make it work with scipy solver)
     n = x.shape[0] // 3
