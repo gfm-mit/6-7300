@@ -17,7 +17,7 @@ from newton.from_julia import newton_julia_jacobian_free_wrapper, newton_julia_w
 from newton.homotopy import continuation_taylor0, continuation_taylor1, continuation_taylor2, newton_continuation_wrapper
 
 def test_simple_case_converges():
-    x0, p, u = generate_inputs(3)
+    x0, p, u = generate_lognormal_input(3)
 
     x1 = newton_matlab_wrapper(x0, p, u)
     f = evalf(x1, t=None, p=p, u=u)
@@ -26,7 +26,7 @@ def test_simple_case_converges():
     assert error < 1e-4, f
 
 def test_simple_case_julia():
-    x0, p, u = generate_inputs(3)
+    x0, p, u = generate_lognormal_input(3)
 
     x1 = newton_julia_wrapper(x0, p, u)
     f = evalf(x1, t=None, p=p, u=u)
