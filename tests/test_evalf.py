@@ -5,7 +5,7 @@ import sdeint
 
 from domain_specific.evalf import evalf, evalg
 from domain_specific.x0 import generate_inputs
-from plot_util import plot_evolution
+from utils.plot_util import plot_evolution
 
 
 def test_symmetric_equilibrium():

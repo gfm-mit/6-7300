@@ -5,7 +5,7 @@ from linear.gcr import gcrWrapper
 from domain_specific.evalf import evalf
 from domain_specific.x0 import generate_inputs
 from domain_specific.jacobian import evalJacobian
-from test_utils.performance import measure_speed, measure_mem, measure_eps_effect_gcr, measure_eps_effect_one_step
+from utils.performance import measure_speed, measure_mem, measure_eps_effect_gcr, measure_eps_effect_one_step
 
 
 def test_jacobian_product():

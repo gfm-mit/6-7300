@@ -7,7 +7,7 @@ import numpy as np
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
-from test_utils.performance import measure_speed, measure_mem, measure_eps_effect_gcr
+from utils.performance import measure_speed, measure_mem, measure_eps_effect_gcr
 
 
 def plot_eps_effect():
