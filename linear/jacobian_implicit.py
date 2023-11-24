@@ -87,6 +87,7 @@ def jf_product(x0, params, u, r, eps=1e-5):
     Jr = (1 / eps) * (f1 - f0)
     return Jr
 
+
 def gcr_implicit_wrapper(x0, p, u, tolrGCR=1e-4, MaxItersGCR=100_000, eps=1e-5):
     f = evalf(x0, t=None, p=p, u=u)
     return tgcr_implicit(jf_product, b=-f, x0=x0, params=p, u=u, tolrGCR=tolrGCR, MaxItersGCR=MaxItersGCR, eps=eps)

@@ -2,9 +2,8 @@ from scipy.integrate import odeint
 import numpy as np
 from domain_specific.evalf import evalf, evalg
 from domain_specific.x0 import generate_inputs
-import matplotlib.pyplot as plt
 import einops
-from plot_util import plot_evolution
+from utils.plot_util import plot_evolution
 import sdeint
 
 

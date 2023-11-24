@@ -66,5 +66,6 @@ def evalJacobian(x, p, u):
 
     return J 
 
+
 def getPreconditioner(J):
     return np.diag(1 / np.diag(J))

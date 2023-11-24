@@ -1,5 +1,4 @@
 import numpy as np
-import einops
 
 
 def evalf(x, t, p, u):

@@ -2,7 +2,8 @@ import numpy as np
 
 from domain_specific.evalf import evalf
 from domain_specific.jacobian import evalJacobian
-from linear.jacobian_implicit import gcr_implicit_wrapper, tgcr_implicit
+from linear.jacobian_implicit import gcr_implicit_wrapper
+
 
 def newton_nd(eval_f, x0, p, u,
               errf=float('inf'),

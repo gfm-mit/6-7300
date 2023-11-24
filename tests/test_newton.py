@@ -1,6 +1,5 @@
-from io import StringIO
-import re
 import numpy as np
+
 
 # only for testing
 import sys
@@ -14,7 +13,8 @@ from domain_specific.evalf import evalf
 from domain_specific.x0 import generate_inputs, generate_lognormal_input
 from newton.from_matlab import newton_nd, newton_matlab_wrapper
 from newton.from_julia import newton_julia_jacobian_free_wrapper, newton_julia_wrapper
-from newton.homotopy import continuation_taylor0, continuation_taylor1, continuation_taylor2, newton_continuation_wrapper
+from newton.homotopy import continuation_taylor1, newton_continuation_wrapper
+
 
 def test_simple_case_converges():
     x0, p, u = generate_lognormal_input(3)

@@ -3,6 +3,7 @@ import numpy as np
 from domain_specific.evalf import evalf
 from domain_specific.jacobian import evalJacobian
 
+
 def newton_nd(eval_f, x0, p, u,
               errf=float('inf'), errDeltax=float('inf'),
               MaxIter=float('inf'), eval_Jf=None):
@@ -50,6 +51,7 @@ def newton_nd(eval_f, x0, p, u,
         print('Newton did NOT converge! Maximum Number of Iterations reached')
 
     return x, converged, errf_k, errDeltax_k, iterations, X
+
 
 def newton_matlab_wrapper(x0, p, u):
     x3 = np.reshape(x0, [-1]).copy()

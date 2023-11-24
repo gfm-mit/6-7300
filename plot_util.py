@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def plot_evolution(ans, n=3):
     """
     [[y_1, y_2, y_3, ...],

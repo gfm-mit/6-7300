@@ -1,11 +1,7 @@
 import numpy as np
-import pandas as pd
-# import scipy
-from itertools import product
 from domain_specific.evalf import evalf
 from domain_specific.jacobian import finiteDifferenceJacobian, evalJacobian
-import seaborn as sns
-from matplotlib import pyplot as plt
+
 
 def gcrSolver(A, b, tolrGCR = 1e-4, MaxItersGCR = 100_000):
     """
@@ -79,6 +75,7 @@ def gcrSolver(A, b, tolrGCR = 1e-4, MaxItersGCR = 100_000):
 
     r_norms = np.array(r_norms) / r_norms[0]
     return x, r_norms, k
+
 
 def gcrWrapper(x0, p, u, tolrGCR = 1e-4, MaxItersGCR = 100_000):
     J = evalJacobian(x0, p, u)

@@ -4,11 +4,13 @@ from domain_specific.evalf import evalf
 from domain_specific.jacobian import evalJacobian
 from newton.from_julia import newton_nd
 
+
 def continuation_taylor0(x3, q, p0, u0):
     def continuation(x1, t=None, p=None, u=None):
         fq = evalf(x1, t=None, p=p, u=u)
         return x1 * (1 - q) + fq * q
     return continuation
+
 
 def continuation_taylor1(x3, q, p0, u0):
     def continuation(x1, t=None, p=None, u=None):
@@ -17,6 +19,7 @@ def continuation_taylor1(x3, q, p0, u0):
         return f0 * (1 - q) + fq * q
     return continuation
 
+
 def continuation_taylor2(x3, q, p0, u0):
     J = evalJacobian(x3, p=p0, u=u0)
     f0 = evalf(x3, t=None, p=p0, u=u0)
@@ -24,6 +27,7 @@ def continuation_taylor2(x3, q, p0, u0):
         fq = evalf(x1, t=None, p=p, u=u)
         return (f0 + J @ (x1 - x3)) * (1 - q) + fq * q
     return continuation
+
 
 def newton_continuation_wrapper(x0, p, u, qs, fqs):
     x3 = np.reshape(x0, [-1])

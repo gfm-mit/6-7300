@@ -10,6 +10,7 @@ from linear.bound import getIterationBoundCond, getIterationBoundGirshgorin, get
 import seaborn as sns
 from matplotlib import pyplot as plt
 
+
 def runSample(x0, p, u):
     J = finiteDifferenceJacobian(evalf, x0, p, u, delta=1e-6)
 

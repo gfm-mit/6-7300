@@ -41,6 +41,7 @@ def measure_eps_effect_gcr(epsilons, n=10):
     triples = pd.DataFrame(triples)
     return triples, -f
 
+
 def measure_speed(ns):
     assert isinstance(ns, Iterable)
     t = None
@@ -83,6 +84,7 @@ def measure_eps_effect_one_step(epsilons, n=10):
         error.append(np.linalg.norm(f + Jdx - f_perturbed) / np.linalg.norm(f))
     return df, error
 
+
 def memray_eval(f):
     if pathlib.Path('output_file.bin').exists():
         pathlib.Path('output_file.bin').unlink()
@@ -95,6 +97,7 @@ def memray_eval(f):
     )
     pathlib.Path('output_file.bin').unlink()
     return stats.total_memory_allocated, stats.peak_memory_allocated
+
 
 def measure_mem(ns):
     f_size, J_size, f_peak, J_peak = [], [], [], []

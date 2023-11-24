@@ -1,11 +1,5 @@
 import numpy as np
-import pandas as pd
-# import scipy
-from itertools import product
-from domain_specific.evalf import evalf
-from domain_specific.jacobian import finiteDifferenceJacobian, evalJacobian
-import seaborn as sns
-from matplotlib import pyplot as plt
+
 
 def getIterationBoundCond(J, tol = 1e-6):
     # Chebyshev bound   

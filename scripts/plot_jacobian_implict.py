@@ -9,7 +9,7 @@ from linear.jacobian_implicit import tgcr_implicit, jf_product
 from domain_specific.evalf import evalf
 from domain_specific.x0 import generate_inputs
 from domain_specific.jacobian import evalJacobian
-from test_utils.performance import measure_speed, measure_mem, measure_eps_effect_one_step, measure_eps_effect_gcr
+from utils.performance import measure_speed, measure_mem, measure_eps_effect_one_step, measure_eps_effect_gcr
 
 
 def plot_eps_effect():
