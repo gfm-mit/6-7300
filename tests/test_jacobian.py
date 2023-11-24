@@ -1,4 +1,5 @@
 import numpy as np
+
 from domain_specific.evalf import evalf
 from domain_specific.x0 import generate_inputs
 from domain_specific.jacobian import finiteDifferenceJacobian, evalJacobian

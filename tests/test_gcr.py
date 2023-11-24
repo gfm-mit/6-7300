@@ -1,14 +1,11 @@
 import numpy as np
 import pandas as pd
-# import scipy
-from itertools import product
+
 from domain_specific.evalf import evalf
-from domain_specific.x0 import generate_inputs, generate_lognormal_input
-from domain_specific.jacobian import finiteDifferenceJacobian, evalJacobian, getPreconditioner
+from domain_specific.x0 import generate_inputs
+from domain_specific.jacobian import finiteDifferenceJacobian
 from linear.gcr import gcrSolver
 from linear.bound import getIterationBoundCond, getIterationBoundGirshgorin, getIterationBoundEigen
-import seaborn as sns
-from matplotlib import pyplot as plt
 
 
 def runSample(x0, p, u):

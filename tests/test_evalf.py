@@ -1,10 +1,11 @@
 from scipy.integrate import odeint
 import numpy as np
+import einops
+import sdeint
+
 from domain_specific.evalf import evalf, evalg
 from domain_specific.x0 import generate_inputs
-import einops
-from utils.plot_util import plot_evolution
-import sdeint
+from plot_util import plot_evolution
 
 
 def test_symmetric_equilibrium():

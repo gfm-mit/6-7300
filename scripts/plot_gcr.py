@@ -1,10 +1,12 @@
-import seaborn as sns
-from matplotlib import pyplot as plt
 import sys
 import os
 import pathlib
 
+import seaborn as sns
+from matplotlib import pyplot as plt
+
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
+
 from domain_specific.evalf import evalf
 from domain_specific.x0 import generate_lognormal_input
 from domain_specific.jacobian import finiteDifferenceJacobian

@@ -1,16 +1,18 @@
 import sys
 import os
 import pathlib
+
 import time
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
+
 from domain_specific.evalf import evalf
 from domain_specific.x0 import generate_inputs, generate_lognormal_input
 from domain_specific.jacobian import evalJacobian
-from utils.performance import memray_eval
+from test_utils.performance import memray_eval
 from newton.from_julia import newton_julia_jacobian_free_wrapper, newton_julia_wrapper
 
 

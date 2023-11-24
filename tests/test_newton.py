@@ -1,17 +1,14 @@
-import numpy as np
-
-
-# only for testing
 import sys
 import os
 import pathlib
 
+import numpy as np
+
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
-# only for testing
 
 from domain_specific.evalf import evalf
 from domain_specific.x0 import generate_inputs, generate_lognormal_input
-from newton.from_matlab import newton_nd, newton_matlab_wrapper
+from newton.from_matlab import newton_matlab_wrapper
 from newton.from_julia import newton_julia_jacobian_free_wrapper, newton_julia_wrapper
 from newton.homotopy import continuation_taylor1, newton_continuation_wrapper
 

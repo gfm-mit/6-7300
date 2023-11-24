@@ -1,6 +1,6 @@
 import numpy as np
 from domain_specific.evalf import evalf
-from domain_specific.jacobian import finiteDifferenceJacobian, evalJacobian
+from domain_specific.jacobian import evalJacobian
 
 
 def gcrSolver(A, b, tolrGCR = 1e-4, MaxItersGCR = 100_000):

@@ -4,8 +4,9 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "editor.codeActionsOnSave": {
-        //"source.fixAll": true,
-        "source.organizeImports": true
-    },
+    "pylint.args": [
+        "--disable=missing-module-docstring",
+        "--disable=missing-class-docstring",
+        "--disable=missing-function-docstring"
+      ]
 }

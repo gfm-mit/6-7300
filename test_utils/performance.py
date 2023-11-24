@@ -1,17 +1,17 @@
-from linear.jacobian_implicit import tgcr_implicit, jf_product, gcr_implicit_wrapper
-from linear.gcr import gcrWrapper
-from domain_specific.evalf import evalf
-from domain_specific.x0 import generate_inputs, generate_lognormal_input
-from domain_specific.jacobian import evalJacobian
-import matplotlib.pyplot as plt
+import os
+import pathlib
+from collections.abc import Iterable
 import time
+
 import numpy as np
 import pandas as pd
 import memray
-import os
-import pathlib
 from tqdm import tqdm
-from collections.abc import Iterable
+
+from linear.jacobian_implicit import jf_product, gcr_implicit_wrapper
+from domain_specific.evalf import evalf
+from domain_specific.x0 import generate_inputs, generate_lognormal_input
+from domain_specific.jacobian import evalJacobian
 
 
 def measure_eps_effect_gcr(epsilons, n=10):
@@ -26,7 +26,6 @@ def measure_eps_effect_gcr(epsilons, n=10):
 
     for eps in tqdm(epsilons, desc="eps_effect_gcr"):
         x1, r_norms = gcr_implicit_wrapper(x0=x0, p=p, u=u, tolrGCR=1e-4, eps=eps)
-        #x1, r_norms, k = gcrWrapper(x0=x0, p=p, u=u, tolrGCR=1e-4)
 
         f = evalf(x0, t=None, p=p, u=u)
         J = evalJacobian(x0, p, u)
