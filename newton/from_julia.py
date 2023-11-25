@@ -2,7 +2,7 @@ import numpy as np
 
 from domain_specific.evalf import evalf
 from domain_specific.jacobian import evalJacobian
-from linear.jacobian_implicit import gcr_implicit_wrapper
+from linear.tgcr_implicit import tgcr_find_root
 
 
 def newton_nd(eval_f, x0, p, u,
@@ -28,7 +28,7 @@ def newton_nd(eval_f, x0, p, u,
             Jf = eval_jf(xk, p=p, u=u)
             dx = np.linalg.solve(Jf, -f)
         else:
-            dx, r_norms = gcr_implicit_wrapper(x0=x0, p=p, u=u, **fd_tgcr_params)
+            dx, r_norms = tgcr_find_root(x0=x0, p=p, u=u, eval_f=eval_f, **fd_tgcr_params)
 
         xk += dx
         X += [xk]
