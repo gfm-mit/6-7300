@@ -3,7 +3,7 @@ import numpy as np
 from domain_specific.evalf import evalf
 
 
-def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF):
+def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF, verbose=True):
     """
     Generalized conjugate residual method for solving [df/dx] x = b 
      using a matrix-free (i.e. matrix-implicit) technique
@@ -83,7 +83,7 @@ def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF):
     if r_norms[-1] > tolrGCR * r_norms[0]:
         print('GCR NONCONVERGENCE!!!\n')
         x = None
-    else:
+    elif verbose:
         print(f'GCR converged in {k+1} iterations')
 
     #print("GCR returned", x, fhand(x, None, pf, uf))
@@ -91,7 +91,7 @@ def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF):
     return x, r_norms
 
 
-def tgcr_find_root(x0, p, u, tolrGCR=1e-4, MaxItersGCR=100_000, eps=1e-5, eval_f=evalf):
+def tgcr_find_root(x0, p, u, tolrGCR=1e-4, MaxItersGCR=100_000, eps=1e-5, eval_f=evalf, verbose=True):
     b = -eval_f(x0, t=None, p=p, u=u)
     max_iters = np.minimum(MaxItersGCR, np.prod(x0.shape))
     return tgcr_matrix_free(
@@ -102,4 +102,5 @@ def tgcr_find_root(x0, p, u, tolrGCR=1e-4, MaxItersGCR=100_000, eps=1e-5, eval_f
         b=b,
         tolrGCR=tolrGCR,
         MaxItersGCR=max_iters,
-        epsMF=eps)
+        epsMF=eps,
+        verbose=verbose)
