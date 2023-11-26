@@ -3,6 +3,7 @@ import os
 import pathlib
 
 import numpy as np
+import pytest
 
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
@@ -30,6 +31,32 @@ def test_simple_case_jacobian_free_julia():
     f = evalf(x1, t=None, p=p, u=u)
 
     error = np.linalg.norm(f) 
+    assert error < 1e-4, error
+
+@pytest.mark.xfail(reason="negative currency values", strict=True, raises=AssertionError)
+def test_negative_currencies():
+    for _ in range(10):
+        x0, p, u = generate_lognormal_input(3)
+
+        x1 = newton_julia_jacobian_free_wrapper(x0, p, u)
+
+def test_100_countries():
+    x0, p, u = generate_inputs(100)
+
+    x1 = newton_julia_jacobian_free_wrapper(x0, p, u)
+    f = evalf(x1, t=None, p=p, u=u)
+
+    error = np.linalg.norm(f) 
+    assert error < 1e-4, error
+
+@pytest.mark.xfail(reason="analytic and finite difference estimates of dmu/dy_tilde don't match", strict=True)
+def test_jacobian_versus_jacobian_free():
+    x0, p, u = generate_inputs(3)
+
+    x1 = newton_julia_stepsize_wrapper(x0, p, u)
+    x2 = newton_julia_jacobian_free_wrapper(x0, p, u)
+
+    error = np.linalg.norm(x1 - x2)
     assert error < 1e-4, error
 
 def test_continuation():

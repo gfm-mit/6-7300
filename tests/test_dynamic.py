@@ -95,7 +95,10 @@ def test_backward_euler():
     golden = np.load('tests/dynamic_golden_1e-3.npy')[::10]
     error = xs - golden
     error = np.linalg.norm(error, axis=1, ord=np.inf)
-    assert (error < 1e-2).all(), error
+    error = np.max(error)
+    assert error < 1e-2, error
+    # embarrassing, but this doesn't work very well
+    assert error > 1e-4, error
 
 
 def test_trapezoid():
