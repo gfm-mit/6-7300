@@ -22,7 +22,7 @@ def implicit_step(eval_f, x0, p, u, eval_Jf=None):
         max_iter=10,
         eval_jf=eval_Jf,
         fd_tgcr_params=dict(
-            tolrGCR=1e-8,
+            tolrGCR=1e-1,
             MaxItersGCR=100,
             eps=1e-10,
         ),
@@ -57,20 +57,33 @@ def dynamic_step(x3, p, u, t1, delta_t, dx_error_max, factory=get_backward_f, gu
     yield clean_x
     # TODO: repeatedly adding floats is a bad idea
     t = 0
+    last_steps = 1
     while t <= t1:
         x0 = clean_x
         f0 = evalf(x0, None, p, u)
         delta_f = 0
-        backoff_steps = 1
-        backoff_x = clean_x
+        trial_steps = last_steps
+        trial_x = guess(x0, p, u, delta_t * trial_steps)
+        trial_f = evalf(trial_x, None, p, u)
+        delta_f = np.linalg.norm(trial_f - f0)
+        if delta_f * trial_steps * delta_t < dx_error_max:
+            while delta_f * trial_steps * delta_t < dx_error_max:
+                safe_x = trial_x
+                safe_steps = trial_steps
+                trial_steps = safe_steps * 2
+                trial_x = guess(x0, p, u, delta_t * trial_steps)
+                trial_f = evalf(trial_x, None, p, u)
+                delta_f = np.linalg.norm(trial_f - f0)
+        # TODO: this might be dangerous for nonmonotonic functions
+        else: # step down
+            while trial_steps > 1 and delta_f * trial_steps * delta_t > dx_error_max:
+                trial_steps = trial_steps // 2
+                trial_x = guess(x0, p, u, delta_t * trial_steps)
+                trial_f = evalf(trial_x, None, p, u)
+                delta_f = np.linalg.norm(trial_f - f0)
+            safe_steps = trial_steps
+            safe_x = trial_x
         # TODO: clean up handling of the case safe_steps == 1
-        while delta_f * backoff_steps * delta_t < dx_error_max:
-            safe_x = backoff_x
-            safe_steps = backoff_steps
-            backoff_steps = safe_steps * 2
-            backoff_x = guess(x0, p, u, delta_t * backoff_steps)
-            backoff_f = evalf(backoff_x, None, p, u)
-            delta_f = np.linalg.norm(backoff_f - f0)
         f_step = factory(x0, delta_t * safe_steps)
         clean_x = implicit_step(f_step, safe_x, p, u)
         for s in range(1, safe_steps + 1):
@@ -79,3 +92,4 @@ def dynamic_step(x3, p, u, t1, delta_t, dx_error_max, factory=get_backward_f, gu
             yield interpolated_x
             if t > t1:
                 break
+        last_steps = safe_steps
