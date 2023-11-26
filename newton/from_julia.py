@@ -10,8 +10,10 @@ def newton_nd(eval_f, x0, p, u,
               err_dx=float('inf'),
               rel_dx=float('inf'),
               max_iter=float('inf'),
+              max_x_norm=float('inf'),
               eval_jf=None,
               fd_tgcr_params=None,
+              step_size=None,
               verbose=True):
     k = 1  # Newton method iteration index
     X = [x0]  # Storing intermediate solutions
@@ -30,6 +32,8 @@ def newton_nd(eval_f, x0, p, u,
         else:
             dx, r_norms = tgcr_find_root(x0=x0, p=p, u=u, eval_f=eval_f, **fd_tgcr_params)
 
+        if step_size is not None:
+            dx *= step_size
         xk += dx
         X += [xk]
 
@@ -37,7 +41,11 @@ def newton_nd(eval_f, x0, p, u,
         f = eval_f(xk, t=None, p=p, u=u)
         errf_k = np.linalg.norm(f, np.inf)
         err_dx_k = np.linalg.norm(dx, np.inf)
-        rel_dx_k = err_dx_k / np.linalg.norm(xk, np.inf)
+        x_norm = np.linalg.norm(xk, np.inf)
+        rel_dx_k = err_dx_k / x_norm
+        if x_norm > max_x_norm:
+            print("Newton diverged: x value greater than {}".format(max_x_norm))
+            break
 
     x = xk  # Extracting the last solution
     iterations = k - 1
@@ -52,13 +60,26 @@ def newton_nd(eval_f, x0, p, u,
 
     return x, converged, errf_k, err_dx_k, rel_dx_k, iterations, X
 
+def newton_julia_stepsize_wrapper(x0, p, u):
+    x3 = np.reshape(x0, [-1]).copy()
+
+    x1, converged, errf_k, err_dx_k, rel_dx_k, iterations, X = newton_nd(
+        evalf, x3, p, u,
+        errf=1e-4, err_dx=1e-4,
+        max_iter=100,
+        step_size=1e-1,
+        max_x_norm=1e3,
+        eval_jf=evalJacobian)
+    return x1
+
 def newton_julia_wrapper(x0, p, u):
     x3 = np.reshape(x0, [-1]).copy()
 
     x1, converged, errf_k, err_dx_k, rel_dx_k, iterations, X = newton_nd(
         evalf, x3, p, u,
         errf=1e-4, err_dx=1e-4,
-        max_iter=1e5,
+        max_iter=10,
+        max_x_norm=1e3,
         eval_jf=evalJacobian)
     return x1
 
@@ -68,7 +89,8 @@ def newton_julia_jacobian_free_wrapper(x0, p, u):
     x1, converged, errf_k, err_dx_k, rel_dx_k, iterations, X = newton_nd(
         evalf, x3, p, u,
         errf=1e-4, err_dx=1e-4,
-        max_iter=1e5,
+        max_iter=10,
+        max_x_norm=1e3,
         fd_tgcr_params=dict(
             tolrGCR=1e-4,
             MaxItersGCR=1e5,
