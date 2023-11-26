@@ -38,6 +38,30 @@ def taylor(x3, q, p0, u0):
     return continuation
 
 
+def alpha(x3, q, p0, u0):
+    def continuation(x1, t=None, p=None, u=None):
+        p2 = p0.copy()
+        p2['alpha'] = p0['alpha'] * np.power(0.1, 10*(1-q))
+        fq = evalf(x1, t=None, p=p2, u=u)
+        return fq
+    return continuation
+
+
+def mu_only(x3, q, p0, u0):
+    n1 = x3.shape[0] // 3
+    n2 = 2 * n1
+    def continuation(x1, t=None, p=None, u=None):
+        x2 = x1.copy()
+        x2[:n1] = 1
+        x2[n2:] = 0
+        fq = evalf(x2, t=None, p=p, u=u)
+        fq[:n2] = 0
+        #fq[:n1] = 1e4 * np.maximum(0, x1[n1:n2])
+        fq[n1:n2] = np.abs(x1[n2:]) + np.abs(1-x1[:n1]) + np.abs(1-x1[n1:n2])
+        return fq
+    return continuation
+
+
 def newton_continuation_wrapper(x0, p, u, qs, fqs):
     x3 = np.reshape(x0, [-1])
 
@@ -48,7 +72,7 @@ def newton_continuation_wrapper(x0, p, u, qs, fqs):
             fq, x1, p, u,
             errf=1e-4,
             err_dx=1e-4,
-            max_iter=2,
+            max_iter=10,
             fd_tgcr_params=dict(
                 tolrGCR=1e-4,
                 MaxItersGCR=1e5,
