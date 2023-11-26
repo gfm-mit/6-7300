@@ -1,6 +1,9 @@
 import numpy as np
 
 
+# TODO
+#1) prevent negative currency values
+#2) anchor prices near 1 - probably requires US to be present
 def evalf(x, t, p, u):
     """
     Removed gamma1 and nu
@@ -30,6 +33,8 @@ def evalf(x, t, p, u):
     # Reshape x (had to flatten to make it work with scipy solver)
     n = x.shape[0] // 3
     y, y_tilde, mu = x.reshape(3, n)
+    assert (y>0).all(), "negative currency spot price: {}".format(y)
+    assert (y_tilde>0).all(), "negative currency exporter's price"
 
     # initialize node quantities
     delt_true_currency = np.zeros([n])
