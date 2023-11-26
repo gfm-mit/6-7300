@@ -115,7 +115,7 @@ def test_dynamic_step(plot=True):
     x0, p, u = generate_inputs(3)
     delta_t = 1e-3
 
-    xs = list(implicit.dynamic_step(x0, p, u, 20, delta_t, factory=implicit.get_trapezoid_f, dx_error_max=3e-5))
+    xs = list(implicit.dynamic_step(x0, p, u, 20, delta_t, factory=implicit.get_trapezoid_f, dx_error_max=3e-4))
     xs = np.stack(xs)
     golden = np.load('tests/dynamic_golden_1e-3.npy')
     error = xs - golden
