@@ -28,8 +28,8 @@ def onetime_setup():
     tic = time.time()
     xs = list(explicit.simulate(x0, p, u, 20, delta_t))
     toc = time.time()
-    xs = np.stack(xs)
-    np.save('tests/dynamic_golden_1e-5.npy', xs)
+    xs = np.stack(xs)[::100]
+    np.save('tests/dynamic_golden_1e-3.npy', xs)
     print(toc - tic)
 
 
@@ -51,7 +51,7 @@ def test_forward_euler():
 
     xs = list(explicit.simulate(x0, p, u, 20, delta_t))
     xs = np.stack(xs)
-    golden = np.load('tests/dynamic_golden_1e-5.npy')[::100]
+    golden = np.load('tests/dynamic_golden_1e-3.npy')
     error = xs - golden
     error = np.linalg.norm(error, axis=1, ord=np.inf)
 
@@ -64,7 +64,7 @@ def test_forward_euler_unstable():
 
     xs = list(explicit.simulate(x0, p, u, 20, delta_t))
     xs = np.stack(xs)
-    golden = np.load('tests/dynamic_golden_1e-5.npy')[::100000]
+    golden = np.load('tests/dynamic_golden_1e-3.npy')[::1000]
     error = xs - golden
     error = np.linalg.norm(error, axis=1, ord=np.inf)[1:] # there's no error on the first step, of course!
 
@@ -78,7 +78,7 @@ def test_rk4():
 
     xs = list(explicit.simulate(x0, p, u, 20, delta_t, f_step=rk4))
     xs = np.stack(xs)
-    golden = np.load('tests/dynamic_golden_1e-5.npy')[::10000]
+    golden = np.load('tests/dynamic_golden_1e-3.npy')[::100]
     error = xs - golden
     error = np.linalg.norm(error, axis=1, ord=np.inf)
 
@@ -91,7 +91,7 @@ def test_backward_euler():
 
     xs = list(implicit.simulate(x0, p, u, 20, delta_t))
     xs = np.stack(xs)
-    golden = np.load('tests/dynamic_golden_1e-5.npy')[::1000]
+    golden = np.load('tests/dynamic_golden_1e-3.npy')[::10]
     error = xs - golden
     error = np.linalg.norm(error, axis=1, ord=np.inf)
     assert (error < 1e-2).all(), error
@@ -103,7 +103,7 @@ def test_trapezoid():
 
     xs = list(implicit.simulate(x0, p, u, 20, delta_t, factory=implicit.get_trapezoid_f))
     xs = np.stack(xs)
-    golden = np.load('tests/dynamic_golden_1e-5.npy')[::1000]
+    golden = np.load('tests/dynamic_golden_1e-3.npy')[::10]
     error = xs - golden
     error = np.linalg.norm(error, axis=1, ord=np.inf)
     assert (error < 1e-4).all(), error
