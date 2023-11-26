@@ -14,7 +14,6 @@ sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
 from domain_specific.x0 import generate_inputs
 from domain_specific.evalf import evalf
-from newton.from_matlab import newton_matlab_wrapper
 from newton.from_julia import newton_julia_wrapper
 from dynamic.explicit import rk4
 import dynamic.explicit as explicit
@@ -108,3 +107,7 @@ def test_trapezoid():
     error = xs - golden
     error = np.linalg.norm(error, axis=1, ord=np.inf)
     assert (error < 1e-4).all(), error
+
+if __name__ == "__main__":
+    print("running {} as script rather than test: generating golden data".format(__file__))
+    onetime_setup()
