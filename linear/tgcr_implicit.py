@@ -93,6 +93,7 @@ def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF):
 
 def tgcr_find_root(x0, p, u, tolrGCR=1e-4, MaxItersGCR=100_000, eps=1e-5, eval_f=evalf):
     b = -eval_f(x0, t=None, p=p, u=u)
+    max_iters = np.minimum(MaxItersGCR, np.prod(x0.shape))
     return tgcr_matrix_free(
         fhand=eval_f,
         xf=x0,
@@ -100,5 +101,5 @@ def tgcr_find_root(x0, p, u, tolrGCR=1e-4, MaxItersGCR=100_000, eps=1e-5, eval_f
         uf=u,
         b=b,
         tolrGCR=tolrGCR,
-        MaxItersGCR=MaxItersGCR,
+        MaxItersGCR=max_iters,
         epsMF=eps)
