@@ -44,5 +44,10 @@ def generate_parameter_ranges(n, samples):
 
 def generate_lognormal_input(n):
     x0, p, u = generate_inputs(n)
-    x0 = np.random.lognormal(size=[3, n])
+    p['g'] = np.random.lognormal(size=n, sigma=2.5)
+    p['d'] = np.exp(np.random.uniform(-1, 1, size=[n, n]))
+    y = np.random.lognormal(size=n, sigma=1)
+    y_tilde = y * np.random.lognormal(size=n, sigma=0.01)
+    mu = np.random.normal(size=n, scale=0.01)
+    x0 = np.stack([y, y_tilde, mu])
     return x0, p, u
