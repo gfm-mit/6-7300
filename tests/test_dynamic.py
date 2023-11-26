@@ -61,16 +61,16 @@ def test_forward_euler():
 
 def test_forward_euler_unstable():
     x0, p, u = generate_inputs(3)
-    delta_t = 1
+    delta_t = 1e1
 
     xs = list(explicit.simulate(x0, p, u, 20, delta_t))
     xs = np.stack(xs)
-    golden = np.load('tests/dynamic_golden_1e-3.npy')[::1000]
+    golden = np.load('tests/dynamic_golden_1e-3.npy')[::10000]
     error = xs - golden
     error = np.linalg.norm(error, axis=1, ord=np.inf)[1:] # there's no error on the first step, of course!
 
     # TODO, this is dumb!
-    assert (error > .1).all(), error
+    assert (error > 1).all(), error
 
 
 def test_rk4():
