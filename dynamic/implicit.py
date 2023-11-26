@@ -1,3 +1,4 @@
+import time
 import seaborn as sns
 from matplotlib import pyplot as plt
 import sys
@@ -12,7 +13,6 @@ from newton.from_julia import newton_nd
 import dynamic.explicit as explicit
 
 def implicit_step(eval_f, x0, p, u, eval_Jf=None):
-    print(eval_f(x0, None, p, u))
     x, converged, errf_k, err_dx_k, rel_dx_k, iterations, X = newton_nd(
         eval_f, x0, p, u,
         # WARNING! untuned magical parameters
@@ -27,7 +27,6 @@ def implicit_step(eval_f, x0, p, u, eval_Jf=None):
             eps=1e-10,
         ),
         verbose=False)
-    print(eval_f(x, None, p, u))
     return x
 
 def get_backward_f(x0, delta_t):
@@ -52,3 +51,31 @@ def simulate(x0, p, u, t1, delta_t, factory=get_backward_f, guess=explicit.forwa
         x1 = guess(x1.copy(), p, u, delta_t)
         x1 = implicit_step(f_step, x1.copy(), p, u)
         yield x1
+
+def dynamic_step(x3, p, u, t1, delta_t, dx_error_max, factory=get_backward_f, guess=explicit.forward_euler):
+    clean_x = np.reshape(x3, [-1])
+    yield clean_x
+    # TODO: repeatedly adding floats is a bad idea
+    t = 0
+    while t <= t1:
+        x0 = clean_x
+        f0 = evalf(x0, None, p, u)
+        delta_f = 0
+        backoff_steps = 1
+        backoff_x = clean_x
+        # TODO: clean up handling of the case safe_steps == 1
+        while delta_f * backoff_steps * delta_t < dx_error_max:
+            safe_x = backoff_x
+            safe_steps = backoff_steps
+            backoff_steps = safe_steps * 2
+            backoff_x = guess(x0, p, u, delta_t * backoff_steps)
+            backoff_f = evalf(backoff_x, None, p, u)
+            delta_f = np.linalg.norm(backoff_f - f0)
+        f_step = factory(x0, delta_t * safe_steps)
+        clean_x = implicit_step(f_step, safe_x, p, u)
+        for s in range(1, safe_steps + 1):
+            interpolated_x = x0 + (clean_x - x0) * s / safe_steps
+            t += delta_t
+            yield interpolated_x
+            if t > t1:
+                break

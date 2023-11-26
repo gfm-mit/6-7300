@@ -22,6 +22,7 @@ from domain_specific.jacobian import evalJacobian
 
 # this takes ones of minutes to run
 def onetime_setup():
+    print("generating golden data instead of running tests".format(__file__))
     x0, p, u = generate_inputs(3)
     delta_t = 1e-5
 
@@ -108,6 +109,18 @@ def test_trapezoid():
     error = np.linalg.norm(error, axis=1, ord=np.inf)
     assert (error < 1e-4).all(), error
 
+
+# TODO: speedup is extremely mild
+def test_dynamic_step(plot=True):
+    x0, p, u = generate_inputs(3)
+    delta_t = 1e-3
+
+    xs = list(implicit.dynamic_step(x0, p, u, 20, delta_t, factory=implicit.get_trapezoid_f, dx_error_max=3e-5))
+    xs = np.stack(xs)
+    golden = np.load('tests/dynamic_golden_1e-3.npy')
+    error = xs - golden
+    error = np.linalg.norm(error, axis=1, ord=np.inf)
+    assert (error < 1e-4).all(), error
+
 if __name__ == "__main__":
-    print("running {} as script rather than test: generating golden data".format(__file__))
     onetime_setup()
