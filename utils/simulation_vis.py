@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from domain_specific import evalf, jacobian
 
-def visualize(xs, p, u):
+def visualize(xs, p, u, savefig=None):
     stacked = einops.rearrange(xs, 't (d c) -> c d t', d=3)
     x_norms = np.linalg.norm(xs, axis=1)
     F = list(tqdm([evalf.evalf(x, None, p, u) for x in xs]))
@@ -41,4 +41,6 @@ def visualize(xs, p, u):
     plt.ylabel('norm')
     plt.legend()
     plt.tight_layout()
+    if savefig is not None:
+        plt.savefig(savefig)
     plt.show()
