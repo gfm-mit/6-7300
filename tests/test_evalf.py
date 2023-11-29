@@ -1,18 +1,20 @@
+import pandas as pd
 from scipy.integrate import odeint
 import numpy as np
 import einops
 import sdeint
 
-from domain_specific.evalf import evalf, evalg
-from domain_specific.x0 import generate_inputs
+from domain_specific.evalf import evalf, evalg, get_exports
+from domain_specific.x0 import generate_inputs, generate_lognormal_input
+from utils import simulation_vis
 from utils.plot_util import plot_evolution
 
 
 def test_symmetric_equilibrium():
     x, p, u = generate_inputs(2)
     x0 = np.array([
-        [1, 1], 
-        [1, 1],
+        [0, 0], 
+        [0, 0],
         [0, 0]
         ]).reshape(-1,)
     dx = evalf(x0, None, p, u)
@@ -22,11 +24,11 @@ def test_symmetric_equilibrium():
 
 def test_convergence():
     T = 1000
-    x, p, u = generate_inputs(2)
+    x, p, u = generate_lognormal_input(2)
     p['sigma'] = np.zeros([2])
     x0 = np.array([
-        [1, 1.01],
-        [1, 1.01],
+        [0, 0.01],
+        [0, 0.01],
         [0, 0]
         ]).reshape(-1,)
     t = np.linspace(0, T, T)
@@ -50,10 +52,11 @@ def test_delays():
     T = 100
     # Small time delay should converge more quickly
     x, p, u = generate_inputs(2)
-    p['tau1'] = 1 * np.ones([2])
+    #p['sigma'] = np.zeros([2])
+    p['tau1'] = 1
     x0 = np.array([
-        [1, 1.1],
-        [1, 1.1],
+        [0, .1],
+        [0, .1],
         [0, 0]
     ]).reshape(-1, )
     t = np.linspace(0, T, T)
@@ -69,10 +72,10 @@ def test_delays():
 
     # Large time delay should converge more slowly
     x, p, u = generate_inputs(2)
-    p['tau1'] = 10 * np.ones([2])
+    p['tau1'] = 10
     x0 = np.array([
-        [1, 1.1],
-        [1, 1.1],
+        [0, .1],
+        [0, .1],
         [0, 0]
     ]).reshape(-1, )
     t = np.linspace(0, T, T)
@@ -88,10 +91,10 @@ def test_elasticity():
     x, p, u = generate_inputs(2)
 
     # Low elasticity means less oscillations
-    p['alpha'] = -1e-1*np.ones([2])
+    p['alpha'] = .1
     x0 = np.array([
-        [1, 1.1],
-        [1, 1.1],
+        [0, .1],
+        [0, .1],
         [0, 0]
         ]).reshape(-1,)
     t = np.linspace(0, T, T)
@@ -106,10 +109,10 @@ def test_elasticity():
     avg_low_oscillation = measure_oscillations(ans_low)
 
     # High elasticity means more oscillations
-    p['alpha'] = -1.5 * np.ones([2])
+    p['alpha'] = .5
     x0 = np.array([
-        [1, 1.1],
-        [1, 1.1],
+        [0, .1],
+        [0, .1],
         [0, 0]
     ]).reshape(-1, )
     t = np.linspace(0, T, T)

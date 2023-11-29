@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from domain_specific.evalf import evalf
-from domain_specific.x0 import generate_inputs
+from domain_specific.x0 import generate_inputs, generate_lognormal_input
 from domain_specific.jacobian import finiteDifferenceJacobian
 from linear.gcr import gcrSolver
 from linear.bound import getIterationBoundCond, getIterationBoundGirshgorin, getIterationBoundEigen
@@ -28,8 +28,7 @@ def runSample(x0, p, u):
 def test_samples():
     res = []
     for i in range(30, 31):
-        x0, p, u = generate_inputs(i)
-        x0 = np.random.lognormal(size=[3, i])
+        x0, p, u = generate_lognormal_input(i)
         row = runSample(x0=x0, p=p, u=u)
         assert row['rel_error'] < 1e-4, row['rel_error']
         row['name'] = "N={}".format(i)
