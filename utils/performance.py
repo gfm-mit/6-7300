@@ -66,7 +66,7 @@ def measure_eps_effect_one_step(epsilons, n=10):
     t = None
     df, error = [], []
     for eps in tqdm(epsilons, desc="eps_effect_one_step"):
-        x0, p, u = generate_inputs(n)
+        x0, p, u = generate_lognormal_input(n)
         x0 = x0.reshape(-1, )
         f = evalf(x0, t, p, u)
         # Compute perturbation

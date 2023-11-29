@@ -1,5 +1,7 @@
 import numpy as np
 
+from domain_specific.evalf import get_exports
+
 
 def finiteDifferenceJacobian(func, x, p, u, delta = 1e-6):
     t = None
@@ -26,46 +28,32 @@ def evalJacobian(x, p, u):
 
     J = np.zeros((x.shape[0], x.shape[0])).astype(np.float64)
     n = int(x.shape[0]/3)
+    n_y = 0
+    n_tilde = n
+    n_mu = 2 * n
 
-    for i in range(n):
-        for j in range(n):
-            if i == j:
-                J[i][j] = x[2*n + i] + p['sigma'][i] * u[i]  # dF(Y_i) / dYi
-                J[i][2 * n + j] = x[i] # dF(Y_i) / dmu_i
+    # everything but exports and imports
+    for c in range(n):
+        # mean reversion terms
+        J[n_y + c][n_y + c] = -1/p['tau3']
+        J[n_tilde + c][n_tilde + c] = -1/p['tau1']
+        J[n_mu + c][n_mu + c] = -1/p['tau2']
 
-                J[n + i][j] = 1/p['tau1'][i]   # dF(Yt_i) / dYi
-                J[n + i][n + j] = -1/p['tau1'][i]   # dF(Yt_i) / dYt_i
+        J[n_y + c][n_mu + c] = 1
+        J[n_tilde + c][n_y + c] = 1/p['tau1']
 
-                J[2 * n + i][2 * n + j] = -1/p['tau2'][i]  # dF(mu_i) / dmu_i
+    _, y_tilde, _ = x.reshape(3, n)
+    x_xm = get_exports(y_tilde, p)
 
-                sum1 = 0
-                sum2 = 0
-
-                for k in range(n):
-                    if k == i: continue
-                    sum1 += p['g'][k] * (x[n + k] ** p['gamma2'][i])/p['d'][i][k]
-                    sum2 += p['g'][k] / (p['d'][k][i] * (x[n + k] ** p['gamma2'][i]))
-
-                J[2 * n + i][n + j] = 0.5 * p['alpha'][i] * p['g'][i] * p['gamma2'][i]/(p['tau2'][i] * p['gw']) * ( sum1/(x[n + i] ** (1 + p['gamma2'][i])) + sum2 * (x[n + i] ** (p['gamma2'][i] - 1)) )  # dF(mu_i) / dYt_i
-
-            else:
-                J[i][j] = 0 # dF(Y_i) / dYj
-                J[i][2 * n + j] = 0 # dF(Y_i) / dmu_j
-
-                J[n + i][j] = 0   # dF(Yt_i) / dYj
-                J[n + i][j] = 0   # dF(Yt_i) / dYt_j
-
-                J[2 * n + i][2 * n + j] = 0  # dF(mu_i) / dmu_j
-
-                J[2 * n + i][n + j] = -0.5 * p['alpha'][i] * p['g'][i] * p['gamma2'][i] * p['g'][j]/(p['tau2'][i] * p['gw'] * p['d'][i][j])
-                J[2 * n + i][n + j] *= ( (x[n + j] ** (p['gamma2'][i]-1))/(x[n + i] ** p['gamma2'][i]) + (x[n + i] ** p['gamma2'][i])/(x[n + j] ** (p['gamma2'][i]+1)))  # dF(mu_i) / dYt_j
-
-            J[i][n + j] = 0 # dF(Y_i) / dYt_j
-            J[n + i][2 * n + j] = 0 # dF(Yt_i) / dmu_j
-            J[2 * n + i][j] = 0   # dF(mu_i) / dY_j
-
-    return J 
-
-
-def getPreconditioner(J):
-    return np.diag(1 / np.diag(J))
+    # exports and imports
+    for c_in in range(n):
+        for c_out in range(n):
+            if c_in == c_out:
+                every_c = np.s_[:] # _magic_
+                exports = -p['gamma2'][every_c] * x_xm[c_out, every_c]
+                imports = -p['gamma2'][c_out] * x_xm[every_c, c_out]
+            if c_in != c_out:
+                exports = p['gamma2'][c_in] * x_xm[c_out, c_in]
+                imports = p['gamma2'][c_out] * x_xm[c_in, c_out]
+            J[n_mu + c_out][n_tilde + c_in] = np.sum(exports + imports) * p['alpha'] / p['tau2']
+    return J

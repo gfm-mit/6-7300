@@ -6,14 +6,16 @@ from tqdm import tqdm
 from domain_specific import evalf, jacobian
 
 def visualize(xs, p, u, savefig=None):
+    n = xs.shape[1] // 3
     stacked = einops.rearrange(xs, 't (d c) -> c d t', d=3)
     x_norms = np.linalg.norm(xs, axis=1)
     F = list(tqdm([evalf.evalf(x, None, p, u) for x in xs]))
     F_cond = list(tqdm([np.linalg.norm(f) for f in F]))
     J = list(tqdm([jacobian.finiteDifferenceJacobian(evalf.evalf, x, p, u) for x in xs]))
     J_cond = list(tqdm([np.linalg.cond(j) for j in J]))
+    # TODO: also somehow measure dissipativity (whether eigenspectrum is all negative)
     fig, axs = plt.subplots(3)
-    for i in range(3):
+    for i in range(n):
         plt.sca(axs[0])
         color = plt.plot(stacked[i, 0], label=f"Country {i}")[0].get_color()
         plt.plot(stacked[i, 1], color=color, dashes=[1,1])

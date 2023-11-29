@@ -1,9 +1,21 @@
 import numpy as np
 
+def get_exports(y_tilde, p):
+    n = y_tilde.shape[0]
+    # initialize derived parameter
+    g_w = np.sum(p['g'])
+    # initialize component quantities
+    x_xm = np.zeros([n, n])
+    for x in range(n):
+        for m in range(n):
+            if x != m:
+                x_xm[x, m] = p['g'][x] * p['g'][m] / g_w / p['d'][x, m]
+                elasticity = np.exp(p['gamma2'][m] * (y_tilde[m] - y_tilde[x]))
+                assert np.abs(elasticity) < 1e2, elasticity
+                x_xm[x, m] *= elasticity
+    # update node quantities
+    return x_xm
 
-# TODO
-#1) prevent negative currency values
-#2) anchor prices near 1 - probably requires US to be present
 def evalf(x, t, p, u):
     """
     Removed gamma1 and nu
@@ -33,8 +45,6 @@ def evalf(x, t, p, u):
     # Reshape x (had to flatten to make it work with scipy solver)
     n = x.shape[0] // 3
     y, y_tilde, mu = x.reshape(3, n)
-    assert (y>0).all(), "negative currency spot price: {}".format(y)
-    assert (y_tilde>0).all(), "negative currency exporter's price"
 
     # initialize node quantities
     delt_true_currency = np.zeros([n])
@@ -42,25 +52,17 @@ def evalf(x, t, p, u):
     N = np.zeros([n])
     delt_currency_drift = np.zeros([n])
 
-    # initialize derived parameter
-    g_w = np.sum(p['g'])
-
     # initialize component quantities
-    x_ij = np.zeros([n, n])
-    for i in range(n):
-        for j in range(n):
-            if i != j:
-                x_ij[i, j] = p['g'][i] * p['g'][j] / g_w / p['d'][i, j]
-                x_ij[i, j] *= np.power(y_tilde[i] / y_tilde[j], p['gamma2'][i])
-    
+    x_ij = get_exports(y_tilde, p)
+
     # update node quantities
     for i in range(n):
-        delt_true_currency[i] = mu[i] * y[i]
-        delt_eff_currency[i] = (y[i] - y_tilde[i]) / p['tau1'][i]
+        delt_true_currency[i] = mu[i] - y[i] / p['tau3']
+        delt_eff_currency[i] = (y[i] - y_tilde[i]) / p['tau1']
         exports = x_ij[i]
-        imports = x_ij[:, i] * y_tilde[i] / y_tilde
+        imports = x_ij[:, i]
         N[i] = np.sum(exports) - np.sum(imports)
-        delt_currency_drift[i] = (p['alpha'][i] * N[i] - mu[i]) / p['tau2'][i]
+        delt_currency_drift[i] = (p['alpha'] * N[i] - mu[i]) / p['tau2']
 
     # Flatten X (to make compatible with scipy solver)
     x_dot = np.concatenate([
@@ -71,11 +73,11 @@ def evalf(x, t, p, u):
     return x_dot
 
 
+# this is the impulse response of state to shocks
 def evalg(x, t, p, u):
     n = x.shape[0] // 3
-    y, y_tilde, mu = x.reshape(3, n)
     return np.diag(np.concatenate([
-        p['sigma'] * y,
-        0 * y_tilde,
-        0 * mu
+        p['sigma'],
+        np.zeros([n]),
+        np.zeros([n]),
         ]))

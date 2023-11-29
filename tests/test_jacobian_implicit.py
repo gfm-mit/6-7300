@@ -1,9 +1,10 @@
+from matplotlib import pyplot as plt
 import numpy as np
 
 from linear.jacobian_implicit import jf_product, gcr_implicit_wrapper
 from linear.gcr import gcrWrapper
 from domain_specific.evalf import evalf
-from domain_specific.x0 import generate_inputs
+from domain_specific.x0 import generate_inputs, generate_lognormal_input
 from domain_specific.jacobian import evalJacobian
 from utils.performance import measure_speed, measure_mem, measure_eps_effect_gcr, measure_eps_effect_one_step
 
@@ -40,10 +41,10 @@ def test_implicit_jacobian_gcr_delta_x():
 
 def test_implicit_jacobian_gcr_delta_f():
     n = 2
-    x0, p, u = generate_inputs(n)
+    x0, p, u = generate_lognormal_input(n)
     x0 = x0.reshape(-1, )
 
-    x1, r_norms = gcr_implicit_wrapper(x0=x0, p=p, u=u, tolrGCR=1e-4, eps=1e-10)
+    x1, r_norms = gcr_implicit_wrapper(x0=x0, p=p, u=u, tolrGCR=1e-6, eps=1e-6)
     f = evalf(x0, t=None, p=p, u=u)
     J = evalJacobian(x0, p, u)
 
@@ -63,8 +64,8 @@ def test_measure_eps_effect_gcr():
 
 def test_measure_mem():
     f_size, J_size, f_peak, J_peak = measure_mem([3, 30])
-    assert f_size[0] > J_size[0], "f should be larger than J at small n"
-    assert f_size[1] < J_size[1], "f should be smaller than J at large n"
+    assert f_peak[0] > J_peak[0], "f should be larger than J at small n"
+    assert f_peak[1] < J_peak[1], "f should be smaller than J at large n"
 
 def test_measure_speed():
     f_time, J_time = measure_speed([10, 100])
