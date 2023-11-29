@@ -41,13 +41,13 @@ def get_trapezoid_f(x0, delta_t):
         return x1 - x0 - delta_t / 2 * (f1 + f0)
     return f
 
-def simulate(x0, p, u, t1, delta_t, factory=get_backward_f, guess=explicit.forward_euler):
+def simulate(x0, p, u, t1, delta_t, evalf_converter=get_backward_f, guess=explicit.forward_euler):
     ts = list(np.arange(0, t1, delta_t)[1:]) + [t1]
     x1 = np.reshape(x0, [-1])
     yield x1
     for t in ts:
         # TODO: remove this copy
-        f_step = factory(x1.copy(), delta_t)
+        f_step = evalf_converter(x1.copy(), delta_t)
         x1 = guess(x1.copy(), p, u, delta_t)
         x1 = implicit_step(f_step, x1.copy(), p, u)
         yield x1

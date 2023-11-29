@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
-from linear.jacobian_implicit import jf_product, gcr_implicit_wrapper
+from linear.old_tgcr_implicit import jf_product, gcr_implicit_wrapper
 from linear.gcr import gcrWrapper
 from domain_specific.evalf import evalf
 from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs

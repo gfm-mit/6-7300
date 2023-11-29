@@ -110,7 +110,7 @@ def test_trapezoid():
     x0, p, u = generate_deterministic_inputs(3)
     delta_t = 1e-2
 
-    xs = list(implicit.simulate(x0, p, u, 20, delta_t, factory=implicit.get_trapezoid_f))
+    xs = list(implicit.simulate(x0, p, u, 20, delta_t, evalf_converter=implicit.get_trapezoid_f))
     xs = np.stack(xs)
     golden = np.load('tests/dynamic_golden_1e-3.npy')[::10]
     error = xs - golden
