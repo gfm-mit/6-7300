@@ -66,21 +66,25 @@ def measure_eps_effect_one_step(epsilons, n=10):
     t = None
     df, error = [], []
     for eps in tqdm(epsilons, desc="eps_effect_one_step"):
-        x0, p, u = generate_stochastic_inputs(n)
-        x0 = x0.reshape(-1, )
-        f = evalf(x0, t, p, u)
-        # Compute perturbation
-        dx0 = np.random.randn(*x0.shape)
-        dx0 = dx0 / np.linalg.norm(dx0) * eps
+        try:
+            x0, p, u = generate_stochastic_inputs(n)
+            x0 = x0.reshape(-1, )
+            f = evalf(x0, t, p, u)
+            # Compute perturbation
+            dx0 = np.random.randn(*x0.shape)
+            dx0 = dx0 / np.linalg.norm(dx0) * eps
 
-        # Compute f(x0 + dx0)
-        f_perturbed = evalf(x0 + dx0, t, p, u)
+            # Compute f(x0 + dx0)
+            f_perturbed = evalf(x0 + dx0, t, p, u)
 
-        # Compute J(x0) dx0
-        Jdx = jf_product(x0, p, u, dx0, eps)
-        # Compute relative error
-        df.append(np.linalg.norm(f - f_perturbed) / np.linalg.norm(f))
-        error.append(np.linalg.norm(f + Jdx - f_perturbed) / np.linalg.norm(f))
+            # Compute J(x0) dx0
+            Jdx = jf_product(x0, p, u, dx0, eps)
+            # Compute relative error
+            df.append(np.linalg.norm(f - f_perturbed) / np.linalg.norm(f))
+            error.append(np.linalg.norm(f + Jdx - f_perturbed) / np.linalg.norm(f))
+        except AssertionError:
+            df.append(np.inf)
+            error.append(np.inf)
     return df, error
 
 

@@ -1,10 +1,13 @@
+from matplotlib import pyplot as plt
 import pandas as pd
+import scipy
 from scipy.integrate import odeint
 import numpy as np
 import einops
 import sdeint
 
 from domain_specific.evalf import evalf, evalg, get_exports
+from domain_specific.jacobian import evalJacobian
 from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
 from utils import simulation_vis
 from utils.plot_util import plot_evolution
@@ -124,13 +127,9 @@ def test_elasticity():
 
 
 def measure_oscillations(ans, start=80):
-    oscillation = []
-    for i in range(1, 10):
-        t_x = ans[:, :, start + i]
-        t_xplus10 = ans[:, :, (start + i) + 10]
-        oscillation.append(abs(t_x - t_xplus10))
-    avg_oscilation = sum(oscillation) / len(oscillation)
-    return avg_oscilation
+    smooth = scipy.ndimage.convolve1d(ans, [1/10]*10, axis=2, mode='constant')
+    oscillation = np.mean(np.abs(ans - smooth))
+    return oscillation
 
 
 def runode(x0, t, p, u):

@@ -19,7 +19,7 @@ def generate_parameters(n):
     tau1 = 1
     tau2 = 1
     tau3 = 1e3
-    sigma = 1e-1 * np.ones([n])
+    sigma = 1e-2 * np.ones([n])
     alpha = 5e-1
     gamma2 = 1 * np.ones([n])          # n x 1
     d = np.ones([n, n])                 # nm x 1

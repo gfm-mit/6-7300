@@ -11,7 +11,6 @@ def get_exports(y_tilde, p):
             if x != m:
                 x_xm[x, m] = p['g'][x] * p['g'][m] / g_w / p['d'][x, m]
                 elasticity = np.exp(p['gamma2'][m] * (y_tilde[m] - y_tilde[x]))
-                assert np.abs(elasticity) < 1e2, elasticity
                 x_xm[x, m] *= elasticity
     # update node quantities
     return x_xm
@@ -45,6 +44,9 @@ def evalf(x, t, p, u):
     # Reshape x (had to flatten to make it work with scipy solver)
     n = x.shape[0] // 3
     y, y_tilde, mu = x.reshape(3, n)
+    assert np.max(y_tilde) - np.min(y_tilde) < 6, "range of currency values now exceeds 6: {}".format(
+        y_tilde.round(3)
+    )
 
     # initialize node quantities
     delt_true_currency = np.zeros([n])
