@@ -7,11 +7,11 @@ import numpy as np
 from tqdm import tqdm
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
-from domain_specific.x0 import generate_inputs
+from domain_specific.x0 import generate_deterministic_inputs
 from dynamic.explicit import simulate
 
 def plot_forward_euler(log_delta_t=-3):
-    x0, p, u = generate_inputs(3)
+    x0, p, u = generate_deterministic_inputs(3)
     delta_t = np.power(10, log_delta_t)
 
     xs = list(simulate(x0, p, u, 20, delta_t))

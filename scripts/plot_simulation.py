@@ -12,7 +12,7 @@ sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
 from dynamic import explicit, implicit
 from domain_specific.evalf import evalf
-from domain_specific.x0 import generate_lognormal_input
+from domain_specific.x0 import generate_stochastic_inputs
 from domain_specific.jacobian import evalJacobian
 from utils import simulation_vis
 
@@ -152,7 +152,7 @@ def plot_rk4_coarsening(x0, p, u):
 
 
 if __name__ == '__main__':
-    x0, p, u = generate_lognormal_input(3)
+    x0, p, u = generate_stochastic_inputs(3)
     if True: # comment this bit out once you find a good setting
         np.save('x0.npy', x0)
         np.save('p.npy', p)

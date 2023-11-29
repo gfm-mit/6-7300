@@ -4,11 +4,11 @@ import seaborn as sns
 import pytest
 
 from domain_specific.evalf import evalf
-from domain_specific.x0 import generate_inputs, generate_lognormal_input
+from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
 from domain_specific.jacobian import finiteDifferenceJacobian, evalJacobian
 
 def test_finite_equals_analytic():
-    x, p, u = generate_lognormal_input(3)
+    x, p, u = generate_stochastic_inputs(3)
     print(x)
     print(p)
     print(u)

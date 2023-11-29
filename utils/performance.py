@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from linear.jacobian_implicit import jf_product, gcr_implicit_wrapper
 from domain_specific.evalf import evalf
-from domain_specific.x0 import generate_inputs, generate_lognormal_input
+from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
 from domain_specific.jacobian import evalJacobian
 
 
@@ -19,7 +19,7 @@ def measure_eps_effect_gcr(epsilons, n=10):
     # for some reason, this produces the nice V shape we expected
     # x0, p, u = generate_inputs(n)
     # whereas this does not
-    x0, p, u = generate_lognormal_input(n)
+    x0, p, u = generate_stochastic_inputs(n)
     x0 = x0.reshape(-1, )
     #f = evalf(x0, t=None, p=p, u=u)
     #J = evalJacobian(x0, p, u)
@@ -46,7 +46,7 @@ def measure_speed(ns):
     t = None
     f_time, J_time = [], []
     for i in tqdm(ns, desc="measure_speed"):
-        x, p, u = generate_inputs(i)
+        x, p, u = generate_deterministic_inputs(i)
         x = x.reshape(-1, )
         # Size of output of f (x2?)
         tic = time.time()
@@ -66,7 +66,7 @@ def measure_eps_effect_one_step(epsilons, n=10):
     t = None
     df, error = [], []
     for eps in tqdm(epsilons, desc="eps_effect_one_step"):
-        x0, p, u = generate_lognormal_input(n)
+        x0, p, u = generate_stochastic_inputs(n)
         x0 = x0.reshape(-1, )
         f = evalf(x0, t, p, u)
         # Compute perturbation
@@ -102,7 +102,7 @@ def measure_mem(ns):
     f_size, J_size, f_peak, J_peak = [], [], [], []
     t = None
     for i in tqdm(ns, desc="mem"):
-        x, p, u = generate_inputs(i)
+        x, p, u = generate_deterministic_inputs(i)
         x = x.reshape(-1, )
         # Size of output of f (x2?)
         total, peak = memray_eval(lambda: evalf(x, t, p, u))

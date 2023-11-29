@@ -4,14 +4,14 @@ import numpy as np
 from linear.jacobian_implicit import jf_product, gcr_implicit_wrapper
 from linear.gcr import gcrWrapper
 from domain_specific.evalf import evalf
-from domain_specific.x0 import generate_inputs, generate_lognormal_input
+from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
 from domain_specific.jacobian import evalJacobian
 from utils.performance import measure_speed, measure_mem, measure_eps_effect_gcr, measure_eps_effect_one_step
 
 
 def test_jacobian_product():
     n = 2
-    x, p, u = generate_inputs(n)
+    x, p, u = generate_deterministic_inputs(n)
 
     r = x.copy()
     r[1] = [0.5, 0.5]
@@ -27,7 +27,7 @@ def test_jacobian_product():
 
 def test_implicit_jacobian_gcr_delta_x():
     n = 2
-    x0, p, u = generate_inputs(n)
+    x0, p, u = generate_deterministic_inputs(n)
     r = x0.copy()
     r[1] = [0.5, 0.5]
     r = r.reshape(-1, )
@@ -41,7 +41,7 @@ def test_implicit_jacobian_gcr_delta_x():
 
 def test_implicit_jacobian_gcr_delta_f():
     n = 2
-    x0, p, u = generate_lognormal_input(n)
+    x0, p, u = generate_stochastic_inputs(n)
     x0 = x0.reshape(-1, )
 
     x1, r_norms = gcr_implicit_wrapper(x0=x0, p=p, u=u, tolrGCR=1e-6, eps=1e-6)

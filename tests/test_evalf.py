@@ -5,13 +5,13 @@ import einops
 import sdeint
 
 from domain_specific.evalf import evalf, evalg, get_exports
-from domain_specific.x0 import generate_inputs, generate_lognormal_input
+from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
 from utils import simulation_vis
 from utils.plot_util import plot_evolution
 
 
 def test_symmetric_equilibrium():
-    x, p, u = generate_inputs(2)
+    x, p, u = generate_deterministic_inputs(2)
     x0 = np.array([
         [0, 0], 
         [0, 0],
@@ -24,7 +24,7 @@ def test_symmetric_equilibrium():
 
 def test_convergence():
     T = 1000
-    x, p, u = generate_lognormal_input(2)
+    x, p, u = generate_stochastic_inputs(2)
     p['sigma'] = np.zeros([2])
     x0 = np.array([
         [0, 0.01],
@@ -51,7 +51,7 @@ def test_convergence():
 def test_delays():
     T = 100
     # Small time delay should converge more quickly
-    x, p, u = generate_inputs(2)
+    x, p, u = generate_deterministic_inputs(2)
     #p['sigma'] = np.zeros([2])
     p['tau1'] = 1
     x0 = np.array([
@@ -71,7 +71,7 @@ def test_delays():
     avg_sm_oscillation = measure_oscillations(ans_sm)
 
     # Large time delay should converge more slowly
-    x, p, u = generate_inputs(2)
+    x, p, u = generate_deterministic_inputs(2)
     p['tau1'] = 10
     x0 = np.array([
         [0, .1],
@@ -88,7 +88,7 @@ def test_delays():
 
 def test_elasticity():
     T = 100
-    x, p, u = generate_inputs(2)
+    x, p, u = generate_deterministic_inputs(2)
 
     # Low elasticity means less oscillations
     p['alpha'] = .1
@@ -155,7 +155,7 @@ if __name__ == '__main__':
             [0, 0]
             ]).reshape(-1,)
         t = np.linspace(0, T, T)
-        x, p, u = generate_inputs(2)
+        x, p, u = generate_deterministic_inputs(2)
         F = evalf(x0, t, p, u)
         F = np.reshape(F, [3, -1]).transpose()
         #ans = runode(x0, t)[0]

@@ -17,7 +17,7 @@ from utils.plot_util import plot_evolution
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 # only for testing
 
-from domain_specific.x0 import generate_inputs, generate_lognormal_input
+from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
 from domain_specific.evalf import evalf
 from newton.from_julia import newton_julia_wrapper
 from dynamic.explicit import rk4
@@ -28,7 +28,7 @@ from domain_specific.jacobian import evalJacobian
 # this takes ones of minutes to run
 def onetime_setup():
     print("generating golden data instead of running tests".format(__file__))
-    x0, p, u = generate_inputs(3)
+    x0, p, u = generate_deterministic_inputs(3)
     delta_t = 1e-5
 
     tic = time.time()
@@ -40,7 +40,7 @@ def onetime_setup():
 
 
 def test_equilibrium():
-    x0, p, u = generate_inputs(3)
+    x0, p, u = generate_deterministic_inputs(3)
     delta_t = 1e-3
 
     xs = list(explicit.simulate(x0, p, u, 20, delta_t))
@@ -52,7 +52,7 @@ def test_equilibrium():
     assert error < 1e-6, error
 
 def test_forward_euler():
-    x0, p, u = generate_inputs(3)
+    x0, p, u = generate_deterministic_inputs(3)
     delta_t = 1e-3
 
     xs = list(explicit.simulate(x0, p, u, 20, delta_t))
@@ -65,7 +65,7 @@ def test_forward_euler():
 
 @pytest.mark.xfail(reason="new parameterization is too stable")
 def test_forward_euler_unstable():
-    x0, p, u = generate_inputs(3)
+    x0, p, u = generate_deterministic_inputs(3)
     delta_t = 1e1
 
     xs = list(explicit.simulate(x0, p, u, 20, delta_t))
@@ -79,7 +79,7 @@ def test_forward_euler_unstable():
 
 
 def test_rk4():
-    x0, p, u = generate_inputs(3)
+    x0, p, u = generate_deterministic_inputs(3)
     delta_t = 1e-1 # damn, son
 
     xs = list(explicit.simulate(x0, p, u, 20, delta_t, f_step=rk4))
@@ -92,7 +92,7 @@ def test_rk4():
 
 
 def test_backward_euler():
-    x0, p, u = generate_inputs(3)
+    x0, p, u = generate_deterministic_inputs(3)
     delta_t = 1e-2
 
     xs = list(implicit.simulate(x0, p, u, 20, delta_t))
@@ -107,7 +107,7 @@ def test_backward_euler():
 
 
 def test_trapezoid():
-    x0, p, u = generate_inputs(3)
+    x0, p, u = generate_deterministic_inputs(3)
     delta_t = 1e-2
 
     xs = list(implicit.simulate(x0, p, u, 20, delta_t, factory=implicit.get_trapezoid_f))
@@ -120,7 +120,7 @@ def test_trapezoid():
 
 # TODO: speedup is extremely mild
 def test_dynamic_step(plot=True):
-    x0, p, u = generate_lognormal_input(3)
+    x0, p, u = generate_stochastic_inputs(3)
     delta_t = 1e-1
 
     xs = list(explicit.simulate(x0, p, u, 10, delta_t, f_step=explicit.rk4))
@@ -134,7 +134,7 @@ def test_dynamic_step(plot=True):
 
 if __name__ == "__main__":
     #onetime_setup()
-    x0, p, u = generate_lognormal_input(3)
+    x0, p, u = generate_stochastic_inputs(3)
     delta_t = 1e-2 # damn, son
     golden = list(implicit.dynamic_step(x0, p, u, 100, delta_t, factory=implicit.get_trapezoid_f, guess=explicit.rk4, dx_error_max=1e-4))
     #golden = np.load('tests/dynamic_golden_1e-3.npy')

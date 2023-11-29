@@ -32,10 +32,10 @@ def generate_parameters(n):
 def generate_shocks(n):
     return np.zeros([n])              # n x 1
 
-def generate_inputs(n):
+def generate_deterministic_inputs(n):
     return generate_default_state(n), generate_parameters(n), generate_shocks(n)
 
-def generate_lognormal_input(n):
+def generate_stochastic_inputs(n):
     p = generate_parameters(n)
     #p['g'] = np.random.lognormal(size=n, sigma=2.5)
     #p['d'] = np.exp(np.random.uniform(-1, 1, size=[n, n]))

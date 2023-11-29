@@ -10,7 +10,7 @@ from tqdm import tqdm
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
 from domain_specific.evalf import evalf
-from domain_specific.x0 import generate_inputs, generate_lognormal_input
+from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
 from domain_specific.jacobian import evalJacobian
 from utils.performance import memray_eval
 from newton.from_julia import newton_julia_jacobian_free_wrapper, newton_julia_wrapper
@@ -21,7 +21,7 @@ def plot_mem():
     t = None
     xs = np.arange(2, 6).astype(int)
     for i in tqdm(xs, desc="mem"):
-        x, p, u = generate_lognormal_input(i)
+        x, p, u = generate_stochastic_inputs(i)
         x = x.reshape(-1, )
         # Size of output of f (x2?)
         tic = time.time()
@@ -59,7 +59,7 @@ def plot_mem():
     return
 
 def plot_surface():
-    x, p, u = generate_inputs(3)
+    x, p, u = generate_deterministic_inputs(3)
     fig, axs = plt.subplots(3, 3)
     x_flat = np.reshape(x, [-1])
     for i in range(3):
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     #plot_mem()
     #plt.savefig('newton_mem.png', bbox_inches='tight')
     #plt.show()
-    x, p, u = generate_inputs(3)
+    x, p, u = generate_deterministic_inputs(3)
     J = evalJacobian(x, p, u)
     print(J.round(1))
     #plot_surface()
