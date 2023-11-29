@@ -46,3 +46,21 @@ def visualize(xs, p, u, savefig=None):
     if savefig is not None:
         plt.savefig(savefig)
     plt.show()
+
+def eigenval_plot(x, p, u):
+    vals = np.linalg.eigvals(jacobian.finiteDifferenceJacobian(evalf.evalf, x, p, u))
+    fig, ax = plt.subplots()
+    ax.scatter(np.real(vals), np.imag(vals), marker='x', s=100, color="orange")  # Fixed 'shape' to 'marker'
+    ax.spines['left'].set_position('zero')
+    ax.spines['bottom'].set_position('zero')
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    plt.xlabel('real')
+    plt.ylabel('imag')
+    plt.title('eigenvalues of Jacobian')
+    plt.xscale('symlog', linthresh=1e-3)
+    plt.yscale('symlog', linthresh=1e-3)
+    plt.show()
+    assert False, (vals)
