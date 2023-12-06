@@ -31,7 +31,7 @@ def visualize_integration(xs, xs_perturb, savefig=None, n=3):
 
 
 def visualize_perturbation(n, t1, p_key, samples=5):
-    data = {'eps': [], 'diff': [], 'state': []}
+    data = {'eps': [], 'diff': []}
     eps = [10e-8, 10e-10, 10e-12, 10e-14, 10e-16]
     avgs = []
     # Iterate over different magnitudes of perturbation
@@ -44,7 +44,7 @@ def visualize_perturbation(n, t1, p_key, samples=5):
             diffs.append(diff)
             data['diff'].append(diff)
             data['eps'].append(dp)
-        avgs.append(np.mean(diffs))
+        avgs.append(np.median(diffs))
     # Plot average effect
     plt.plot(eps, avgs)
 
@@ -64,10 +64,15 @@ def visualize_perturbation(n, t1, p_key, samples=5):
 def run_perturbation(n, dp, p_key, t1):
     x0, p, u = generate_stochastic_inputs(n)
     xs, xs_perturb = sensitivity.analyze_sensitivity(x0, p, u, p_key, dp, t1=t1)
-    diff = max(np.abs(np.subtract(xs_perturb[:, 1], xs[:, 1]) / dp))
+    diff = np.abs(np.subtract(xs_perturb, xs) / dp) # t x 3n
+    # Iterate over countries
+    country_diffs = []
+    for i in range(n):
+        country_diffs.append(np.max(diff[:, i])) # Max of y over country i over time
+    max_diff = np.max(country_diffs) # Max of y over all countries over time
     # Uncomment to viusalize trajectory
     # visualize(xs, xs_perturb)
-    return diff
+    return max_diff
 
 
 if __name__ == "__main__":
