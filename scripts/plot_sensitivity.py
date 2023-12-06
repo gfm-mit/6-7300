@@ -6,7 +6,7 @@ from utils import sensitivity
 import seaborn as sns
 
 
-def visualize(xsçç, xs_perturb, savefig=None):
+def visualize(xs, xs_perturb, savefig=None):
     stacked = einops.rearrange(xs, 't (d c) -> c d t', d=3)
     # x_norms = np.linalg.norm(xs, axis=1)
     stacked_perturb = einops.rearrange(xs_perturb, 't (d c) -> c d t', d=3)
