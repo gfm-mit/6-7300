@@ -7,6 +7,8 @@ import numpy as np
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
+from domain_specific.evalf import evalf
+from domain_specific.jacobian import evalJacobian
 from utils.performance import measure_speed, measure_mem, measure_eps_effect_gcr
 
 
@@ -38,8 +40,9 @@ def plot_eps_effect():
 
 
 def plot_mem():
-    #f_size, J_size, f_peak, J_peak = measure_mem(range(2, 100))
-    f_size, J_size, f_peak, J_peak = measure_mem(range(2, 10))
+    evalf_kwargs = {'x': None, 't': None, 'p': None, 'u': None}
+    evalJacobian_kwargs = {'x': None, 'p': None, 'u': None}
+    f_size, J_size, f_peak, J_peak = measure_mem(range(2, 100), evalf, evalf_kwargs, evalJacobian, evalJacobian_kwargs)
     color = plt.plot(f_size, label="Implicit Jacobian")[0].get_color()
     plt.plot(f_peak, color=color, dashes=[1,1], zorder=20)
     color = plt.plot(J_size, label="Explicit Jacobian")[0].get_color()
@@ -54,8 +57,9 @@ def plot_mem():
 
 
 def plot_speed():
-    #f_time, J_time = measure_speed(range(2, 1000))
-    f_time, J_time = measure_speed(range(2, 100))
+    evalf_kwargs = {'x': None, 't': None, 'p': None, 'u': None}
+    evalJacobian_kwargs = {'x': None, 'p': None, 'u': None}
+    f_time, J_time = measure_speed(range(2, 100), evalf, evalf_kwargs, evalJacobian, evalJacobian_kwargs)
     plt.plot(f_time, label="Implicit Jacobian")
     plt.plot(J_time, label="Explicit Jacobian")
     plt.legend()
@@ -66,13 +70,14 @@ def plot_speed():
     plt.title("Speed improvement using implicit Jacobian")
     return
 
+
 if __name__ == '__main__':
     plot_speed()
     plt.savefig('implicit_jacobian_speed.png', bbox_inches='tight')
     plt.show()
-    plot_eps_effect()
-    plt.savefig('implicit_jacobian_eps.png', bbox_inches='tight')
-    plt.show()
+    #plot_eps_effect()
+    #plt.savefig('implicit_jacobian_eps.png', bbox_inches='tight')
+    #plt.show()
     plot_mem()
     plt.savefig('implicit_jacobian_mem.png', bbox_inches='tight')
     plt.show()

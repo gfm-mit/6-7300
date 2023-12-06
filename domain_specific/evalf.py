@@ -1,5 +1,4 @@
 import numpy as np
-
 def get_exports(y_tilde, p):
     n = y_tilde.shape[0]
     # initialize derived parameter

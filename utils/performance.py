@@ -41,24 +41,36 @@ def measure_eps_effect_gcr(epsilons, n=10):
     return triples, -f
 
 
-def measure_speed(ns):
+def measure_speed(ns, eval_f1, args_f1, eval_f2, args_f2):
     assert isinstance(ns, Iterable)
     t = None
-    f_time, J_time = [], []
+    f1_times, f2_times = [], []
     for i in tqdm(ns, desc="measure_speed"):
         x, p, u = generate_deterministic_inputs(i)
         x = x.reshape(-1, )
-        # Size of output of f (x2?)
-        tic = time.time()
-        f = evalf(x, t, p, u)
-        toc = time.time()
-        f_time.append(toc - tic)
-        # Size of Jacobian
-        tic = time.time()
-        J = evalJacobian(x, p, u)
-        toc = time.time()
-        J_time.append(toc - tic)
-    return f_time, J_time
+        args_f1['x'] = x
+        args_f1['p'] = p
+        args_f1['u'] = u
+        args_f2['x'] = x
+        args_f2['p'] = p
+        args_f2['u'] = u
+        f1_time, f2_time = speed(eval_f1, args_f1, eval_f2, args_f2)
+        f1_times.append(f1_time)
+        f2_times.append(f2_time)
+    return f1_times, f2_times
+
+
+def speed(eval_f1, kwargs_f1, eval_f2, kwargs_f2):
+    tic = time.time()
+    f1 = eval_f1(*kwargs_f1.values())
+    toc = time.time()
+    f1_time = toc - tic
+    tic = time.time()
+    f2 = eval_f2(*kwargs_f2.values())
+    toc = time.time()
+    f2_time = toc - tic
+    return f1_time, f2_time
+
 
 
 def measure_eps_effect_one_step(epsilons, n=10):
@@ -102,18 +114,22 @@ def memray_eval(f):
     return stats.total_memory_allocated, stats.peak_memory_allocated
 
 
-def measure_mem(ns):
-    f_size, J_size, f_peak, J_peak = [], [], [], []
+def measure_mem(ns, eval_f1, args_f1, eval_f2, args_f2):
+    f1_size, f2_size, f1_peak, f2_peak = [], [], [], []
     t = None
     for i in tqdm(ns, desc="mem"):
         x, p, u = generate_deterministic_inputs(i)
         x = x.reshape(-1, )
-        # Size of output of f (x2?)
-        total, peak = memray_eval(lambda: evalf(x, t, p, u))
-        f_size.append(total)
-        f_peak.append(peak)
-        # Size of Jacobian
-        total, peak = memray_eval(lambda: evalJacobian(x, p, u))
-        J_size.append(total)
-        J_peak.append(peak)
-    return f_size, J_size, f_peak, J_peak
+        args_f1['x'] = x
+        args_f1['p'] = p
+        args_f1['u'] = u
+        args_f2['x'] = x
+        args_f2['p'] = p
+        args_f2['u'] = u
+        total, peak = memray_eval(lambda: eval_f1(*args_f1.values()))
+        f1_size.append(total)
+        f1_peak.append(peak)
+        total, peak = memray_eval(lambda: eval_f2(*args_f2.values()))
+        f2_size.append(total)
+        f2_peak.append(peak)
+    return f1_size, f2_size, f1_peak, f2_peak
