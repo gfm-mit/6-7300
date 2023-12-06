@@ -40,7 +40,7 @@ def generate_stochastic_inputs(n):
     #p['g'] = np.random.lognormal(size=n, sigma=2.5)
     #p['d'] = np.exp(np.random.uniform(-1, 1, size=[n, n]))
 
-    y = np.random.normal(size=n, scale=1)
+    y = np.random.normal(size=n, scale=0.01)
     y_tilde = y + np.random.normal(size=n, scale=0.01)
     mu = np.random.normal(size=n, scale=0.01)
     x0 = np.stack([y, y_tilde, mu])

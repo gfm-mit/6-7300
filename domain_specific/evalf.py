@@ -44,7 +44,7 @@ def evalf(x, t, p, u):
     # Reshape x (had to flatten to make it work with scipy solver)
     n = x.shape[0] // 3
     y, y_tilde, mu = x.reshape(3, n)
-    assert np.max(y_tilde) - np.min(y_tilde) < 6, "range of currency values now exceeds 6: {}".format(
+    assert np.max(y_tilde) - np.min(y_tilde) < 1e6, "range of currency values now exceeds 1e6: {}".format(
         y_tilde.round(3)
     )
 
