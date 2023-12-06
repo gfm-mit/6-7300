@@ -7,10 +7,12 @@ import seaborn as sns
 from tqdm import tqdm
 
 
-def visualize_integration(xs, xs_perturb, savefig=None):
+def visualize_integration(xs, xs_perturb, savefig=None, n=3):
+    # Visualize trajectory of original and perturbed system
     stacked = einops.rearrange(xs, 't (d c) -> c d t', d=3)
     stacked_perturb = einops.rearrange(xs_perturb, 't (d c) -> c d t', d=3)
-    for i in range(3):
+    # Iterate over nodes (countries)
+    for i in range(n):
         # Plot original currency values
         color = plt.plot(stacked[i, 0], label=f"Country {i}")[0].get_color()
         # Plot perturbed currency values
