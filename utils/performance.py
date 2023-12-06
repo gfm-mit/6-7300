@@ -13,6 +13,28 @@ from domain_specific.evalf import evalf
 from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
 from domain_specific.jacobian import evalJacobian
 
+import matplotlib.pyplot as plt
+import einops
+
+
+def visualize(xs, savefig=None):
+    stacked = einops.rearrange(xs, 't (d c) -> c d t', d=3)
+    for i in range(3):
+        color = plt.plot(stacked[i, 0], label=f"Country {i}")[0].get_color()
+        plt.plot(stacked[i, 1], color=color, dashes=[1, 1])
+    plt.legend()
+    plt.xlabel('time')
+    plt.ylabel('currency value')
+    plt.yscale('symlog')
+    plt.title('Solid is $y$, dashed lines are $y_p$')
+    plt.legend()
+    plt.tight_layout()
+    if savefig is not None:
+        plt.savefig(savefig)
+    plt.show()
+    plt.clf()
+
+
 
 def measure_eps_effect_gcr(epsilons, n=10):
     triples = []
@@ -46,7 +68,8 @@ def measure_speed(ns, eval_f1, args_f1, eval_f2, args_f2):
     t = None
     f1_times, f2_times = [], []
     for i in tqdm(ns, desc="measure_speed"):
-        x, p, u = generate_deterministic_inputs(i)
+        #x, p, u = generate_deterministic_inputs(i)
+        x, p, u = generate_stochastic_inputs(i)
         x = x.reshape(-1, )
         args_f1['x'] = x
         args_f1['p'] = p
@@ -62,11 +85,11 @@ def measure_speed(ns, eval_f1, args_f1, eval_f2, args_f2):
 
 def speed(eval_f1, kwargs_f1, eval_f2, kwargs_f2):
     tic = time.time()
-    f1 = eval_f1(*kwargs_f1.values())
+    f1 = list(eval_f1(*kwargs_f1.values()))
     toc = time.time()
     f1_time = toc - tic
     tic = time.time()
-    f2 = eval_f2(*kwargs_f2.values())
+    f2 = list(eval_f2(*kwargs_f2.values()))
     toc = time.time()
     f2_time = toc - tic
     return f1_time, f2_time

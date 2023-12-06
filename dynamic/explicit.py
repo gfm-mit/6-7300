@@ -1,6 +1,7 @@
 import sys
 import os
 import pathlib
+from tqdm import tqdm
 
 import numpy as np
 
@@ -18,11 +19,11 @@ def rk4(x0, p, u, delta_t):
     k4 = evalf(x0 + delta_t * k3, t=None, p=p, u=u)
     return x0 + delta_t/6 * (k1 + 2*k2 + 2*k3 + k4)
 
-def simulate(x0, p, u, t1, delta_t, f_step=forward_euler):
+def simulate(x0, p, u, t1, delta_t, f_step=rk4):
     ts = list(np.arange(0, t1, delta_t)[1:]) + [t1]
     x1 = np.reshape(x0, [-1])
     yield x1
-    for t in ts:
+    for t in tqdm(ts):
         # TODO: remove this copy
         x1 = f_step(x1.copy(), p, u, delta_t)
         yield x1
