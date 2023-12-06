@@ -12,9 +12,9 @@ import sys
 import os
 import pathlib
 
+sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 from utils.plot_util import plot_evolution
 
-sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 # only for testing
 
 from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs

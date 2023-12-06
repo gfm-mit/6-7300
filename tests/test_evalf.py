@@ -5,6 +5,12 @@ from scipy.integrate import odeint
 import numpy as np
 import einops
 import sdeint
+# only for testing
+import sys
+import os
+import pathlib
+
+sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
 from domain_specific.evalf import evalf, evalg, get_exports
 from domain_specific.jacobian import evalJacobian

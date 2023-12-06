@@ -1,6 +1,13 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
+# only for testing
+import sys
+import os
+import pathlib
+
+sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
+
 from linear.old_tgcr_implicit import jf_product, gcr_implicit_wrapper
 from linear.gcr import gcrWrapper
 from domain_specific.evalf import evalf

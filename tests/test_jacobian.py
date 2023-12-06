@@ -2,6 +2,12 @@ from matplotlib import pyplot as plt
 import numpy as np
 import seaborn as sns
 import pytest
+# only for testing
+import sys
+import os
+import pathlib
+
+sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
 from domain_specific.evalf import evalf
 from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs

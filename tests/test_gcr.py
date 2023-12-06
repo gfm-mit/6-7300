@@ -1,6 +1,13 @@
 import numpy as np
 import pandas as pd
 
+# only for testing
+import sys
+import os
+import pathlib
+
+sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
+
 from domain_specific.evalf import evalf
 from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
 from domain_specific.jacobian import finiteDifferenceJacobian
