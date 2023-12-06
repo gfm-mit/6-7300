@@ -5,6 +5,7 @@ import sys
 import os
 import pathlib
 import numpy as np
+from tqdm import tqdm
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
@@ -41,11 +42,11 @@ def get_trapezoid_f(x0, delta_t):
         return x1 - x0 - delta_t / 2 * (f1 + f0)
     return f
 
-def simulate(x0, p, u, t1, delta_t, evalf_converter=get_backward_f, guess=explicit.forward_euler):
+def simulate(x0, p, u, t1, delta_t, evalf_converter=get_trapezoid_f, guess=explicit.forward_euler):
     ts = list(np.arange(0, t1, delta_t)[1:]) + [t1]
     x1 = np.reshape(x0, [-1])
     yield x1
-    for t in ts:
+    for t in tqdm(ts):
         # TODO: remove this copy
         f_step = evalf_converter(x1.copy(), delta_t)
         x1 = guess(x1.copy(), p, u, delta_t)
