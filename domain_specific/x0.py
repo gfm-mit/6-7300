@@ -52,12 +52,12 @@ def generate_real_parameters(n):
         n = 10
 
     distances = pd.read_parquet('domain_specific/distances.parquet')
-    # sigmas = pd.read_parquet('domain_specific/volatilities.parquet')
+    sigmas = pd.read_parquet('domain_specific/volatilities.parquet')
 
     tau1 = 1
     tau2 = 0.1
     tau3 = 10
-    sigma = 1e-2 * np.ones([n])
+    sigma = (0.1 * sigmas.iloc[:n]).to_numpy()
     alpha = 5e-1
     gamma2 = .5 * np.ones([n]) # values between 0 and 1 don't seem to affect divergence
 
@@ -80,10 +80,23 @@ def generate_deterministic_inputs(n):
 def generate_stochastic_inputs(n):
     p = generate_parameters(n)
     p['g'] = np.random.lognormal(size=n, sigma=2.5)
-    p['d'] = np.exp(np.random.uniform(-1, 1, size=[n, n]))
+    # p['g'] = np.array([0.84381828, 3.38247938])
 
-    y = np.random.normal(size=n, scale=0.5)
+    p['d'] = np.exp(np.random.uniform(-1, 1, size=[n, n]))
+    p['d'] = (p['d'] + p['d'].T)/2
+    p['d'] = p['d'] - 0.999 * np.diag(np.diag(p['d']))
+
+    # p['d'] = np.array([[1.11288078e-05, 5.90065753e-01], [5.90065753e-01, 8.41615669e-06]])
+    # p['d'] = np.array([[9.84527154e-06, 1.38899569], [1.38899569, 1.01580164e-05]])
+
+    print(p['g'])
+    print(p['d'])
+
+    # y should be positive right?
+    # y = np.random.normal(size=n, scale=0.5)
+    y = 0.01 + 5 * np.random.random(n)  # to have a range from $[0.1,5.1] per currency
     y_tilde = y + np.random.normal(size=n, scale=0.01)
+    y_tilde[y_tilde < 0] = 0
     mu = np.random.normal(size=n, scale=0.01)
     x0 = np.stack([y, y_tilde, mu])
 
@@ -95,8 +108,9 @@ def generate_deterministic_real_inputs(n):
 
 def generate_stochastic_real_inputs(n):
     p = generate_real_parameters(n)
-    #p['g'] = np.random.lognormal(size=n, sigma=2.5)
-    #p['d'] = np.exp(np.random.uniform(-1, 1, size=[n, n]))
+    # p['g'] = np.random.lognormal(size=n, sigma=2.5)
+    # p['d'] = np.exp(np.random.uniform(-1, 1, size=[n, n]))
+    # p['d'] = (p['d'] + p['d'].T)/2
 
     y = np.random.normal(size=n, scale=0.5)
     y_tilde = y + np.random.normal(size=n, scale=0.01)

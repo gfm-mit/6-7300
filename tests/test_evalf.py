@@ -63,17 +63,22 @@ def test_symmetric_equilibrium():
 
 def test_convergence():
     T = 1000
-    x, p, u = generate_stochastic_inputs(2)
-    p['sigma'] = np.zeros([2])
-    x0 = np.array([
-        [0, 0.01],
-        [0, 0.01],
-        [0, 0]
-        ]).reshape(-1,)
+    n = 2
+    x0, p, u = generate_stochastic_inputs(n)
+    p['sigma'] = np.zeros([n])
+
+    # x0 = np.zeros((3, n))
+    # x0[0:2,1:] = 0.01
+    x0 = x0.reshape(-1,)
+
     t = np.linspace(0, T, T)
+
     def f_wrapper(x, t):
+        x[:2*n][x[:2*n] < 0] = 0
         return evalf(x, t, p, u)
+
     def g_wrapper(x, t):
+        x[:2*n][x[:2*n] < 0] = 0
         g = evalg(x, t, p, u)[:]
         return g
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
@@ -83,6 +88,7 @@ def test_convergence():
     ans = ans[999].reshape(3, 2)
     n1_ans = ans[:, 0]
     n2_ans = ans[:, 1]
+    print(n1_ans, n2_ans)
     assert(round(n1_ans[0], 13) == round(n2_ans[0], 13))    # Justify rounding with condition number
     assert(round(n1_ans[1], 13) == round(n2_ans[1], 13))    # Noise at 2 decimal points
 

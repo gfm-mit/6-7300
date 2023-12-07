@@ -10,7 +10,11 @@ def get_exports(y_tilde, p):
     x_xm *= p['g'][:, None] * p['g'][None, :]
     elasticity = np.ones_like(x_xm)
     elasticity = p['gamma2'][None, :] * (y_tilde[None, :] - y_tilde[:, None])
+    # print('y_tilde=',y_tilde)
+    # print('x_m:',x_xm)
     x_xm *= np.exp(elasticity)
+    # print('x_m2:',x_xm)
+    # print()
     x_xm -= np.diag(np.diag(x_xm))
     return x_xm
 
