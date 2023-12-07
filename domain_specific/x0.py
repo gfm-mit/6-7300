@@ -56,9 +56,9 @@ def generate_parameters(n):
     # tilde_y = 10000 * np.random.random([n])                    # n x 1
     tau1 = 1
     tau2 = 1
-    tau3 = 1e3
+    tau3 = 1
     sigma = 1e-2 * np.ones([n])
-    alpha = 5e-1
+    alpha = 1e-1
     gamma2 = 1 * np.ones([n]) # values between 0 and 1 don't seem to affect divergence
     d = np.ones([n, n])                 # nm x 1
     # d = 1000 * np.random.random([n, n])                 # nm x 1
