@@ -6,7 +6,9 @@ def get_exports(y_tilde, p):
     # initialize derived parameter
     g_w = np.sum(p['g'])
     # initialize component quantities
+    np.fill_diagonal(p['d'], 1)
     x_xm = 1 / p['d'] / g_w
+    np.fill_diagonal(x_xm, 0)
     x_xm *= p['g'][:, None] * p['g'][None, :]
     elasticity = p['gamma2'][None, :] * (y_tilde[None, :] - y_tilde[:, None])
     x_xm *= np.exp(elasticity)
