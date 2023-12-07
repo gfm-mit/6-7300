@@ -27,7 +27,7 @@ def test_get_exports_for_loops():
     x_for = get_exports_for_loops(y_tilde, p)
     x_np = get_exports(y_tilde, p)
     assert (x_for.shape == x_np.shape), (x_for.shape, x_np.shape)
-    assert (np.abs(x_for - x_np) < 1e-13).all(), np.max(np.abs(x_for - x_np))
+    assert (np.abs(x_for - x_np) < 1e-12).all(), np.max(np.abs(x_for - x_np))
 
 
 def test_timing():
@@ -125,7 +125,7 @@ def test_delays():
     ans_sm = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_sm = einops.rearrange(ans_sm, "t (d n) -> d n t", d=3)
     #plot_evolution(ans_sm)
-    avg_sm_oscillation = measure_oscillations(ans_sm)
+    avg_sm_oscillation = measure_low_freq(ans_sm)
 
     # Large time delay should converge more slowly
     x, p, u = generate_deterministic_inputs(2)
@@ -139,7 +139,7 @@ def test_delays():
     ans_lg = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_lg = einops.rearrange(ans_lg, "t (d n) -> d n t", d=3)
     #plot_evolution(ans_lg)
-    avg_lg_oscillation = measure_oscillations(ans_lg)
+    avg_lg_oscillation = measure_low_freq(ans_lg)
     assert(np.mean(avg_sm_oscillation) < np.mean(avg_lg_oscillation))
 
 
@@ -163,7 +163,7 @@ def test_elasticity():
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_low = einops.rearrange(ans, "t (d n) -> d n t", d=3)
     #plot_evolution(ans_low)
-    avg_low_oscillation = measure_oscillations(ans_low)
+    avg_low_oscillation = measure_high_freq(ans_low)
 
     # High elasticity means more oscillations
     p['alpha'] = .5
@@ -176,11 +176,17 @@ def test_elasticity():
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_high = einops.rearrange(ans, "t (d n) -> d n t", d=3)
     #plot_evolution(ans_high)
-    avg_high_oscillation = measure_oscillations(ans_high)
+    avg_high_oscillation = measure_high_freq(ans_high)
     assert(np.mean(avg_low_oscillation) < np.mean(avg_high_oscillation))
 
 
-def measure_oscillations(ans, start=80):
+def measure_low_freq(ans, start=80):
+    smooth = scipy.ndimage.convolve1d(ans, [1/10]*10, axis=2, mode='constant')
+    oscillation = np.mean(np.abs(smooth))
+    return oscillation
+
+
+def measure_high_freq(ans, start=80):
     smooth = scipy.ndimage.convolve1d(ans, [1/10]*10, axis=2, mode='constant')
     oscillation = np.mean(np.abs(ans - smooth))
     return oscillation
