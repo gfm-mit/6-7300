@@ -79,6 +79,7 @@ def test_symmetric_equilibrium():
     assert (dx == 0).all()
 
 
+# note: with heterogeneous gdps, the two countries no longer converge to equal currency values
 def test_convergence():
     T = 1000
     x, p, u = generate_stochastic_inputs(2)
@@ -95,14 +96,9 @@ def test_convergence():
         g = evalg(x, t, p, u)[:]
         return g
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
-    ans_plot = einops.rearrange(ans, "t (d n) -> d n t", d=3)
-    #plot_evolution(ans_plot)
-
-    ans = ans[999].reshape(3, 2)
-    n1_ans = ans[:, 0]
-    n2_ans = ans[:, 1]
-    assert(round(n1_ans[0], 13) == round(n2_ans[0], 13))    # Justify rounding with condition number
-    assert(round(n1_ans[1], 13) == round(n2_ans[1], 13))    # Noise at 2 decimal points
+    final_delta = ans[-1] - ans[-2]
+    norm = np.linalg.norm(final_delta, np.inf)
+    assert norm < 1e-13
 
 
 def test_delays():
