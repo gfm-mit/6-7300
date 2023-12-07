@@ -8,10 +8,10 @@ def get_exports(y_tilde, p):
     # initialize component quantities
     x_xm = 1 / p['d'] / g_w
     x_xm *= p['g'][:, None] * p['g'][None, :]
-    elasticity = np.ones_like(x_xm)
     elasticity = p['gamma2'][None, :] * (y_tilde[None, :] - y_tilde[:, None])
     x_xm *= np.exp(elasticity)
-    x_xm -= np.diag(np.diag(x_xm))
+    np.fill_diagonal(x_xm, 0)
+    assert not np.isnan(np.sum(x_xm))
     return x_xm
 
 
