@@ -1,6 +1,21 @@
 import numpy as np
 
+
 def get_exports(y_tilde, p):
+    n = y_tilde.shape[0]
+    # initialize derived parameter
+    g_w = np.sum(p['g'])
+    # initialize component quantities
+    x_xm = 1 / p['d'] / g_w
+    x_xm *= p['g'][:, None] * p['g'][None, :]
+    elasticity = np.ones_like(x_xm)
+    elasticity = p['gamma2'][None, :] * (y_tilde[None, :] - y_tilde[:, None])
+    x_xm *= np.exp(elasticity)
+    x_xm -= np.diag(np.diag(x_xm))
+    return x_xm
+
+
+def get_exports_for_loops(y_tilde, p):
     n = y_tilde.shape[0]
     # initialize derived parameter
     g_w = np.sum(p['g'])
@@ -14,6 +29,7 @@ def get_exports(y_tilde, p):
                 x_xm[x, m] *= elasticity
     # update node quantities
     return x_xm
+
 
 def evalf(x, t, p, u):
     """

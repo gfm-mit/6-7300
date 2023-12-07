@@ -5,6 +5,7 @@ from scipy.integrate import odeint
 import numpy as np
 import einops
 import sdeint
+import time
 # only for testing
 import sys
 import os
@@ -12,11 +13,40 @@ import pathlib
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
-from domain_specific.evalf import evalf, evalg, get_exports
+from domain_specific.evalf import evalf, evalg, get_exports, get_exports_for_loops
 from domain_specific.jacobian import evalJacobian
 from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
 from utils import simulation_vis
 from utils.plot_util import plot_evolution
+
+
+def test_get_exports_for_loops():
+    n = 100
+    x, p, u = generate_stochastic_inputs(n)
+    y_tilde = x[1]
+    x_for = get_exports_for_loops(y_tilde, p)
+    x_np = get_exports(y_tilde, p)
+    assert (x_for.shape == x_np.shape), (x_for.shape, x_np.shape)
+    assert (np.abs(x_for - x_np) < 1e-15).all(), np.max(np.abs(x_for - x_np))
+
+
+def test_timing():
+    n = 100
+    x, p, u = generate_stochastic_inputs(n)
+    y_tilde = x[1]
+    tic = time.time()
+    for _ in range(int(1e2)):
+        x_for = get_exports_for_loops(y_tilde, p)
+    toc = time.time()
+    slow = toc - tic
+    tic = time.time()
+    for _ in range(int(1e2)):
+        x_for = get_exports(y_tilde, p)
+    toc = time.time()
+    fast = toc - tic
+    assert fast < 1e-2 * slow
+    print(f"for loops: {toc - tic}seconds")
+    print(f"numpy: {toc - tic}seconds")
 
 
 def test_symmetric_equilibrium():
