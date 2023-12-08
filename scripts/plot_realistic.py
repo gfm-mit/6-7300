@@ -8,7 +8,6 @@ from dynamic import explicit
 
 def visualize_real(n, t1=40):
     x0, p, u = generate_stochastic_real_inputs(n)
-    x0_n, p_n, u_n = generate_stochastic_inputs(n)
     kwargs = dict(
         x0=x0,
         p=p,

@@ -20,6 +20,9 @@ def generate_real_parameters(n):
 
     distances = pd.read_parquet('domain_specific/distances.parquet')
     sigmas = pd.read_parquet('domain_specific/volatilities.parquet')
+    # Not sure why we're using parquet for this
+    # But doing it anyway for consistency
+    gdps = pd.read_parquet('domain_specific/gdp.parquet')
 
     tau1 = 1
     tau2 = 0.1
@@ -31,8 +34,8 @@ def generate_real_parameters(n):
     d = distances.iloc[:n, :n]
     d = (0.5 + d/d.max().max()).to_numpy()-0.5 * np.eye(n) # Get realistic values of distances in range of 0.5 to 1.5
 
-    # d = 1000 * np.random.random([n, n])                 # nm x 1
-    g = np.ones([n])                    # n x 1 (little y)
+    g = gdps['gdp'].to_numpy()[:n] / gdps['gdp'].to_numpy()[:n].max()
+    print(g)
     # Build x, p, u arrays
     p = {'tau1': tau1, 'tau2': tau2, 'tau3': tau3, 'sigma': sigma, 'alpha': alpha, 'gamma2': gamma2, 'd': d, 'g': g}
     return p
