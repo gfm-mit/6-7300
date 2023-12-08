@@ -5,6 +5,7 @@ from scipy.integrate import odeint
 import numpy as np
 import einops
 import sdeint
+import time
 # only for testing
 import sys
 import os
@@ -12,11 +13,58 @@ import pathlib
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
-from domain_specific.evalf import evalf, evalg, get_exports
+from domain_specific.evalf import evalf, evalf_for_loops, evalg, get_exports, get_exports_for_loops
 from domain_specific.jacobian import evalJacobian
 from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
 from utils import simulation_vis
 from utils.plot_util import plot_evolution
+
+
+def test_get_exports_for_loops():
+    n = 100
+    x, p, u = generate_stochastic_inputs(n)
+    y_tilde = x[1]
+    x_for = get_exports_for_loops(y_tilde, p)
+    x_np = get_exports(y_tilde, p)
+    assert (x_for.shape == x_np.shape), (x_for.shape, x_np.shape)
+    assert (np.abs(x_for - x_np) < 1e-12).all(), np.max(np.abs(x_for - x_np))
+
+
+def test_timing():
+    n = 100
+    x, p, u = generate_stochastic_inputs(n)
+    y_tilde = x[1]
+    tic = time.time()
+    for _ in range(int(1e2)):
+        x_for = get_exports_for_loops(y_tilde, p)
+    toc = time.time()
+    slow = toc - tic
+    tic = time.time()
+    for _ in range(int(1e2)):
+        x_for = get_exports(y_tilde, p)
+    toc = time.time()
+    fast = toc - tic
+    assert fast < 1e-2 * slow
+    print(f"for loops: {toc - tic}seconds")
+    print(f"numpy: {toc - tic}seconds")
+
+
+def test_evalf_for_loops():
+    for_time = 0
+    np_time = 0
+    for _ in range(100):
+        n = 100
+        x, p, u = generate_stochastic_inputs(n)
+        x3 = np.reshape(x, [-1])
+        tic = time.time()
+        f_for = evalf_for_loops(x3.copy(), None, p, u)
+        toc = time.time()
+        f_np = evalf(x3.copy(), None, p, u)
+        np_time += time.time() - toc
+        for_time += toc - tic
+        assert (f_for.shape == f_np.shape), (f_for.shape, f_np.shape)
+        assert (np.abs(f_for - f_np) < 1e-11).all(), np.max(np.abs(f_for - f_np))
+    assert np_time < 0.25 * for_time
 
 
 def test_symmetric_equilibrium():
@@ -31,6 +79,7 @@ def test_symmetric_equilibrium():
     assert (dx == 0).all()
 
 
+# note: with heterogeneous gdps, the two countries no longer converge to equal currency values
 def test_convergence():
     T = 1000
     x, p, u = generate_stochastic_inputs(2)
@@ -47,14 +96,9 @@ def test_convergence():
         g = evalg(x, t, p, u)[:]
         return g
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
-    ans_plot = einops.rearrange(ans, "t (d n) -> d n t", d=3)
-    #plot_evolution(ans_plot)
-
-    ans = ans[999].reshape(3, 2)
-    n1_ans = ans[:, 0]
-    n2_ans = ans[:, 1]
-    assert(round(n1_ans[0], 13) == round(n2_ans[0], 13))    # Justify rounding with condition number
-    assert(round(n1_ans[1], 13) == round(n2_ans[1], 13))    # Noise at 2 decimal points
+    final_delta = ans[-1] - ans[-2]
+    norm = np.linalg.norm(final_delta, np.inf)
+    assert norm < 1e-13
 
 
 def test_delays():
@@ -77,7 +121,7 @@ def test_delays():
     ans_sm = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_sm = einops.rearrange(ans_sm, "t (d n) -> d n t", d=3)
     #plot_evolution(ans_sm)
-    avg_sm_oscillation = measure_oscillations(ans_sm)
+    avg_sm_oscillation = measure_low_freq(ans_sm)
 
     # Large time delay should converge more slowly
     x, p, u = generate_deterministic_inputs(2)
@@ -91,7 +135,7 @@ def test_delays():
     ans_lg = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_lg = einops.rearrange(ans_lg, "t (d n) -> d n t", d=3)
     #plot_evolution(ans_lg)
-    avg_lg_oscillation = measure_oscillations(ans_lg)
+    avg_lg_oscillation = measure_low_freq(ans_lg)
     assert(np.mean(avg_sm_oscillation) < np.mean(avg_lg_oscillation))
 
 
@@ -115,7 +159,7 @@ def test_elasticity():
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_low = einops.rearrange(ans, "t (d n) -> d n t", d=3)
     #plot_evolution(ans_low)
-    avg_low_oscillation = measure_oscillations(ans_low)
+    avg_low_oscillation = measure_high_freq(ans_low)
 
     # High elasticity means more oscillations
     p['alpha'] = .5
@@ -128,11 +172,17 @@ def test_elasticity():
     ans = sdeint.itoint(f_wrapper, g_wrapper, x0, t)
     ans_high = einops.rearrange(ans, "t (d n) -> d n t", d=3)
     #plot_evolution(ans_high)
-    avg_high_oscillation = measure_oscillations(ans_high)
+    avg_high_oscillation = measure_high_freq(ans_high)
     assert(np.mean(avg_low_oscillation) < np.mean(avg_high_oscillation))
 
 
-def measure_oscillations(ans, start=80):
+def measure_low_freq(ans, start=80):
+    smooth = scipy.ndimage.convolve1d(ans, [1/10]*10, axis=2, mode='constant')
+    oscillation = np.mean(np.abs(smooth))
+    return oscillation
+
+
+def measure_high_freq(ans, start=80):
     smooth = scipy.ndimage.convolve1d(ans, [1/10]*10, axis=2, mode='constant')
     oscillation = np.mean(np.abs(ans - smooth))
     return oscillation
