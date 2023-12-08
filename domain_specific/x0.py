@@ -10,7 +10,6 @@ sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
 def generate_real_parameters(n):
     """
-    Copied from Sarthak's code
     :param n (int): number of nodes
     :return: state vector x, parameters p, inputs u
     """
@@ -20,10 +19,13 @@ def generate_real_parameters(n):
 
     distances = pd.read_parquet('domain_specific/distances.parquet')
     sigmas = pd.read_parquet('domain_specific/volatilities.parquet')
+    # Not sure why we're using parquet for this
+    # But doing it anyway for consistency
+    gdps = pd.read_parquet('domain_specific/gdp.parquet')
 
     tau1 = 1
     tau2 = 0.1
-    tau3 = 10
+    tau3 = 1000
     sigma = (0.1 * sigmas.iloc[:n]).to_numpy()
     alpha = 5e-1
     gamma2 = .5 * np.ones([n]) # values between 0 and 1 don't seem to affect divergence
@@ -31,8 +33,7 @@ def generate_real_parameters(n):
     d = distances.iloc[:n, :n]
     d = (0.5 + d/d.max().max()).to_numpy()-0.5 * np.eye(n) # Get realistic values of distances in range of 0.5 to 1.5
 
-    # d = 1000 * np.random.random([n, n])                 # nm x 1
-    g = np.ones([n])                    # n x 1 (little y)
+    g = gdps['gdp'].to_numpy()[:n] / gdps['gdp'].to_numpy()[:n].max()
     # Build x, p, u arrays
     p = {'tau1': tau1, 'tau2': tau2, 'tau3': tau3, 'sigma': sigma, 'alpha': alpha, 'gamma2': gamma2, 'd': d, 'g': g}
     return p
@@ -50,10 +51,6 @@ def generate_parameters(n):
     :param n (int): number of nodes
     :return: state vector x, parameters p, inputs u
     """
-    # Placeholders
-    # y = 10000 * np.random.random([n])                    # n x 1
-    # tilde_y = y                    # n x 1
-    # tilde_y = 10000 * np.random.random([n])                    # n x 1
     tau1 = 1
     tau2 = 1
     tau3 = 1
@@ -92,8 +89,6 @@ def generate_deterministic_real_inputs(n):
 
 def generate_stochastic_real_inputs(n):
     p = generate_real_parameters(n)
-    #p['g'] = np.random.lognormal(size=n, sigma=2.5)
-    #p['d'] = np.exp(np.random.uniform(-1, 1, size=[n, n]))
 
     y = np.random.normal(size=n, scale=0.5)
     y_tilde = y + np.random.normal(size=n, scale=0.01)
