@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import pandas as pd
 import numpy as np
-import os
 
-from dynamic import explicit, implicit
-from domain_specific.x0 import generate_stochastic_inputs
+from dynamic import explicit
+from domain_specific.x0 import generate_stochastic_real_inputs, generate_demo_inputs
+from domain_specific.evalf import evalf
 
 
 def setup():
@@ -17,18 +17,34 @@ def setup():
     return fig, ax
 
 
-def step(t, xs, locs, ax):
+def step(t, p, u, xs, locs, ax):
     ax.clear()
     ax.stock_img()
+    p_demo = p.copy()
+    p_demo['d'] = p_demo['d'][t, :, :]
+    _, exports = evalf(xs[t], None, p_demo, u, yield_intermediates=True)
     for idx, row in locs.iterrows():
-        size = abs(xs[t, idx]) # Get currency value from country idx at time t
-        ax.plot(row['long'], row['lat'], 'o', markersize=100*size, transform=ccrs.PlateCarree())
+        # Get currency value from country idx at time t
+        # Convert from log
+        size = abs(10**xs[t, idx]) / abs(10**xs[t]).max()
+        # Plot nodes
+        ax.plot(row['long'], row['lat'], 'o', markersize=10*size, color='blue', transform=ccrs.PlateCarree())
         ax.text(row['long'], row['lat'], row['country'], transform=ccrs.PlateCarree())
+        # Plot edges
+        for idx_other, row_other in locs.iterrows():
+            if idx_other != idx:
+                n = exports[idx_other] / exports.max()
+                if n > 0:
+                    color = 'green'
+                else:
+                    color = 'red'
+                ax.plot([row['long'], row_other['long']], [row['lat'], row_other['lat']],
+                        linewidth=abs(n), color=color, alpha=0.5, transform=ccrs.PlateCarree())
     return
 
 
-def animate(fig, xs, locs, ax):
-    ani = FuncAnimation(fig, step, frames=range(100), fargs=(xs, locs, ax), interval=100)
+def animate(fig, p, u, xs, locs, ax):
+    ani = FuncAnimation(fig, step, frames=range(100), fargs=(p, u, xs, locs, ax), interval=100)
     return ani
 
 
@@ -38,22 +54,24 @@ if __name__ == "__main__":
     fig, ax = setup()
 
     # Generate data to visualize
-    if os.path.exists('./viz/xs.npy'):
-        xs = np.load('./viz/xs.npy')
-    else:
-        x0, p, u = generate_stochastic_inputs(3)
-        kwargs = dict(
-            x0=x0,
-            p=p,
-            u=u,
-            t1=1,
-            delta_t=1e-2,
-            f_step=explicit.rk4,
-        )
-        xs = np.array(list(explicit.simulate(**kwargs)))
-        np.save('./viz/xs.npy', xs)
+    #if os.path.exists('./viz/xs.npy'):
+    #    xs = np.load('./viz/xs.npy')
+    #else:
+    x0, p, u = generate_demo_inputs(10)
+    kwargs = dict(
+        x0=x0,
+        p=p,
+        u=u,
+        t1=100,
+        delta_t=1e-2,
+        f_step=explicit.rk4,
+        demo=True
+    )
+    xs = np.array(list(explicit.simulate(**kwargs)))
 
-    ani = animate(fig, xs, locs, ax)
-    ani.save('animation.mp4')
+    np.save('./viz/xs.npy', xs)
+
+    ani = animate(fig, p, u, xs, locs, ax)
+    ani.save('animation.mp4', fps=100)
 
     plt.show()
