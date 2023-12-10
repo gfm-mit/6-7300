@@ -3,7 +3,7 @@ import numpy as np
 from domain_specific.evalf import evalf
 
 
-def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF, verbose=True):
+def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF, verbose=True, f0=None):
     """
     Generalized conjugate residual method for solving [df/dx] x = b 
      using a matrix-free (i.e. matrix-implicit) technique
@@ -34,7 +34,8 @@ def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF, verbose=
     p_full = []
     Mp_full = [] 
     k = 0
-    f0 = fhand(xf, t=None, p=pf, u=uf)
+    if f0 is None:
+        f0 = fhand(xf, t=None, p=pf, u=uf)
     while (r_norms[k]/r_norms[0] > tolrGCR) and (k <= MaxItersGCR):
         # Use the residual as the first guess for the new search direction and multiply by M
         p = r.copy()
@@ -103,4 +104,5 @@ def tgcr_find_root(x0, p, u, tolrGCR=1e-4, MaxItersGCR=100_000, eps=1e-5, eval_f
         tolrGCR=tolrGCR,
         MaxItersGCR=max_iters,
         epsMF=eps,
-        verbose=verbose)
+        verbose=verbose,
+        f0=-b)
