@@ -8,7 +8,7 @@ import pathlib
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
 
-def generate_demo_parameters(n, delta_t=1e-2, t=100):
+def generate_demo_parameters(n, delta_t=1e-2, t=100, seed=5):
     """
     Get time series to simulate shocks
     :param n (int): number of nodes
@@ -19,6 +19,7 @@ def generate_demo_parameters(n, delta_t=1e-2, t=100):
         n = 10
 
     distances = pd.read_parquet('domain_specific/distances.parquet')
+    tarrifs = pd.read_parquet('domain_specific/tarrifs.parquet')
     sigmas = pd.read_parquet('domain_specific/volatilities.parquet')
     # Not sure why we're using parquet for this
     # But doing it anyway for consistency
@@ -27,23 +28,30 @@ def generate_demo_parameters(n, delta_t=1e-2, t=100):
     tau1 = 1
     tau2 = 1
     tau3 = 1
-    sigma = (0.1 * sigmas.iloc[:n]).to_numpy() # doesn't do anything without Weiner process
+    sigma = (0.1 * sigmas.iloc[:n]).to_numpy() # Doesn't do anything without Weiner process
     alpha = 1e-1
-    gamma2 = 1 * np.ones([n]) # values between 0 and 1 don't seem to affect divergence
+    gamma2 = 1 * np.ones([n])
 
-    np.random.seed(5)
-    d = np.ones([int(t / delta_t), n, n])
-    d_steady = np.exp(np.random.uniform(-1, 1, size=[n, n]))
+    np.random.seed(seed)
+    d_timeseries = np.ones([int(t / delta_t), n, n])
+    # Use tariffs and distance as a proxy for trade friction
+    d = np.zeros([n, n])
+    for c in range(n):
+        for c_other in range(n):
+            d[c, c_other] = np.exp(tarrifs['tarrif'].iloc[c] / np.max(tarrifs['tarrif'])) * (distances.iloc[c, c_other] / 24902)
+
+    # Time series to simulate shock in demo
     for i in range(int(t / delta_t)):
-        d[i, :, :] = d_steady
+        d_timeseries[i, :, :] = d
+        # Shock at t=5000
         if i > 5000:
-            d[i, 1, 0] = 0.02
-            d[i, 0, 1] = 0.02
+            d_timeseries[i, 2, 0] = 5e-2
+            d_timeseries[i, 0, 2] = 5e-2
 
     g = (gdps['gdp'].to_numpy()[:n] / gdps['gdp'].to_numpy()[:n].max())
 
     # Build x, p, u arrays
-    p = {'tau1': tau1, 'tau2': tau2, 'tau3': tau3, 'sigma': sigma, 'alpha': alpha, 'gamma2': gamma2, 'd': d, 'g': g}
+    p = {'tau1': tau1, 'tau2': tau2, 'tau3': tau3, 'sigma': sigma, 'alpha': alpha, 'gamma2': gamma2, 'd': d_timeseries, 'g': g}
     return p
 
 
@@ -149,10 +157,10 @@ def generate_stochastic_real_inputs(n):
     return x0, p, generate_shocks(n)
 
 
-def generate_demo_inputs(n, t=100):
+def generate_demo_inputs(n, t=100, seed=5):
     p = generate_demo_parameters(n, t=t)
 
-    np.random.seed(5)
+    np.random.seed(seed)
     y = np.random.normal(size=n, scale=0.5)
     y_tilde = y + np.random.normal(size=n, scale=0.05)
     mu = np.random.normal(size=n, scale=0.05)

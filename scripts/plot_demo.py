@@ -67,5 +67,5 @@ def visualize_real_exports(n, t1=100):
 
 if __name__ == '__main__':
     n = 10
-    #visualize_real(n)
+    visualize_real(n)
     visualize_real_exports(n)

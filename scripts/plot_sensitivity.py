@@ -13,7 +13,8 @@ parameters = {'tau1': r'$\tau_1$', 'tau2': r'$\tau_2$', 'tau3': r'$\tau_3$',
 
 
 def visualize_integration(p_key, savefig=None, n=3):
-    eps = [1e-2, 3e-2, 5e-2, 7e-2, 1e-3, 3e-3, 5e-3, 7e-3, 1e-4, 3e-4, 5e-4, 7e-4]
+    eps = [1e-2, 1e-3, 1e-4, 1e-6, 1e-8, 1e-10, 1e-12, 1e-14, 1e-16]
+    #eps = [1e-2, 3e-2, 5e-2, 7e-2, 1e-3, 3e-3, 5e-3, 7e-3, 1e-4, 3e-4, 5e-4, 7e-4]
     #x0, p, u = generate_stochastic_inputs(n)
     x0, p, u = generate_demo_inputs(n)
     xs, _ = sensitivity.analyze_sensitivity(x0, p, u, p_key, 0, t1=t1)
@@ -57,7 +58,7 @@ def visualize_perturbation(n, t1, savefig=None, samples=10):
             diffs = []
             # For each perturbation, sample several points to get spread
             for i in range(samples):
-                diff = run_perturbation(n, dp, p_key, t1)
+                diff = run_perturbation(n, dp, p_key, t1, seed=i)
                 diffs.append(diff)
                 data['diff'].append(diff)
                 data['eps'].append(dp)
@@ -82,9 +83,9 @@ def visualize_perturbation(n, t1, savefig=None, samples=10):
     return
 
 
-def run_perturbation(n, dp, p_key, t1):
+def run_perturbation(n, dp, p_key, t1, seed=5):
     #x0, p, u = generate_stochastic_inputs(n)
-    x0, p, u = generate_demo_inputs(n)
+    x0, p, u = generate_demo_inputs(n, seed=seed)
     xs, xs_perturb = sensitivity.analyze_sensitivity(x0, p, u, p_key, dp, t1=t1)
     diff = np.abs(np.subtract(xs_perturb, xs) / dp) # t x 3n
     # Iterate over countries
@@ -97,6 +98,6 @@ def run_perturbation(n, dp, p_key, t1):
 
 if __name__ == "__main__":
     n = 10
-    t1 = 40
+    t1 = 100
     #visualize_perturbation(n, t1, savefig="perturbation.png")
     visualize_integration('alpha', n=n, savefig="intergation.png")
