@@ -30,7 +30,7 @@ def newton_nd(eval_f, x0, p, u,
             Jf = eval_jf(xk, p=p, u=u)
             dx = np.linalg.solve(Jf, -f)
         else:
-            dx, r_norms = tgcr_find_root(x0=x0, p=p, u=u, eval_f=eval_f, **fd_tgcr_params, verbose=verbose)
+            dx, r_norms = tgcr_find_root(x0=x0, p=p, u=u, eval_f=eval_f, **fd_tgcr_params, verbose=verbose, f0=f)
 
         if step_size is not None:
             dx *= step_size
