@@ -57,7 +57,7 @@ def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF, verbose=
         if norm_Mp == 0:
             print(f'GCR breakdown at step{k}!!!\n')
             print(r_norms)
-            assert False
+            assert False, "Krylov subspace exhausted before MaxItersGCR"
             break
         Mp = Mp/norm_Mp
         p = p/norm_Mp
