@@ -22,29 +22,31 @@ def step(t, p, u, xs, locs, ax):
     ax.stock_img()
     p_demo = p.copy()
     p_demo['d'] = p_demo['d'][t, :, :]
-    _, exports = evalf(xs[t], None, p_demo, u, yield_intermediates=True)
+    _, x_ij = evalf(xs[t], None, p_demo, u, yield_intermediates=True)
     for idx, row in locs.iterrows():
+        # Plot nodes
         # Get currency value from country idx at time t
         # Convert from log
-        size = abs(10**xs[t, idx]) / abs(10**xs[t]).max()
-        # Plot nodes
-        ax.plot(row['long'], row['lat'], 'o', markersize=10*size, color='blue', transform=ccrs.PlateCarree())
-        ax.text(row['long'], row['lat'], row['country'], transform=ccrs.PlateCarree())
+        size = np.exp(xs[t, idx]) / np.exp(xs[t]).max()
+        ax.plot(row['long'], row['lat'], 'o', markersize=15 * size, color='blue', transform=ccrs.PlateCarree(),
+                zorder=2)
+        ax.text(row['long']+5, row['lat'], row['country'], transform=ccrs.PlateCarree(), zorder=3)
         # Plot edges
         for idx_other, row_other in locs.iterrows():
             if idx_other != idx:
-                n = exports[idx_other] / exports.max()
-                if n > 0:
-                    color = 'green'
-                else:
-                    color = 'red'
-                ax.plot([row['long'], row_other['long']], [row['lat'], row_other['lat']],
-                        linewidth=abs(n), color=color, alpha=0.5, transform=ccrs.PlateCarree())
+                # Exports
+                n = x_ij[idx, idx_other] / x_ij.max()
+                n_other = x_ij[idx_other, idx] / x_ij.max()
+                color = "green"
+                ax.plot([row['long']+1, row_other['long']+1], [row['lat']+1, row_other['lat']+1],
+                        linewidth=5*abs(n), color=color, alpha=0.5, transform=ccrs.PlateCarree(), zorder=1)
+                ax.plot([row['long']-1, row_other['long']-1], [row['lat']-1, row_other['lat']-1],
+                        linewidth=5*abs(n_other), color=color, alpha=0.5, transform=ccrs.PlateCarree(), zorder=1)
     return
 
 
 def animate(fig, p, u, xs, locs, ax):
-    ani = FuncAnimation(fig, step, frames=range(100), fargs=(p, u, xs, locs, ax), interval=100)
+    ani = FuncAnimation(fig, step, frames=range(10000), fargs=(p, u, xs, locs, ax), interval=10000)
     return ani
 
 
@@ -54,9 +56,6 @@ if __name__ == "__main__":
     fig, ax = setup()
 
     # Generate data to visualize
-    #if os.path.exists('./viz/xs.npy'):
-    #    xs = np.load('./viz/xs.npy')
-    #else:
     x0, p, u = generate_demo_inputs(10)
     kwargs = dict(
         x0=x0,
@@ -68,8 +67,6 @@ if __name__ == "__main__":
         demo=True
     )
     xs = np.array(list(explicit.simulate(**kwargs)))
-
-    np.save('./viz/xs.npy', xs)
 
     ani = animate(fig, p, u, xs, locs, ax)
     ani.save('animation.mp4', fps=100)

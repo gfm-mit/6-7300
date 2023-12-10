@@ -13,6 +13,7 @@ def analyze_sensitivity(x0, p, u, p_key, dp, t1=40):
         t1=t1,
         delta_t=1e-2,
         f_step=explicit.rk4,
+        demo=True
     )
     xs = np.array(list(explicit.simulate(**kwargs)))
     # Note some parameters are scalars and others are vectors

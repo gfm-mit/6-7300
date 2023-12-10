@@ -84,7 +84,7 @@ def evalf(x, t, p, u, yield_intermediates=False):
         delt_currency_drift,
         ])
     if yield_intermediates:
-        return x_dot, N
+        return x_dot, x_ij
     return x_dot
 
 

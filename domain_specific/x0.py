@@ -31,6 +31,7 @@ def generate_demo_parameters(n, delta_t=1e-2, t=100):
     alpha = 1e-1
     gamma2 = 1 * np.ones([n]) # values between 0 and 1 don't seem to affect divergence
 
+    np.random.seed(5)
     d = np.ones([int(t / delta_t), n, n])
     d_steady = np.exp(np.random.uniform(-1, 1, size=[n, n]))
     for i in range(int(t / delta_t)):
@@ -151,7 +152,7 @@ def generate_stochastic_real_inputs(n):
 def generate_demo_inputs(n, t=100):
     p = generate_demo_parameters(n, t=t)
 
-    #np.random.seed(10)
+    np.random.seed(5)
     y = np.random.normal(size=n, scale=0.5)
     y_tilde = y + np.random.normal(size=n, scale=0.05)
     mu = np.random.normal(size=n, scale=0.05)

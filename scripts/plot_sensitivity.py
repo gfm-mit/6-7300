@@ -1,4 +1,4 @@
-from domain_specific.x0 import generate_stochastic_inputs
+from domain_specific.x0 import generate_stochastic_inputs, generate_demo_inputs
 import matplotlib.pyplot as plt
 import einops
 import numpy as np
@@ -14,12 +14,13 @@ parameters = {'tau1': r'$\tau_1$', 'tau2': r'$\tau_2$', 'tau3': r'$\tau_3$',
 
 def visualize_integration(p_key, savefig=None, n=3):
     eps = [1e-2, 3e-2, 5e-2, 7e-2, 1e-3, 3e-3, 5e-3, 7e-3, 1e-4, 3e-4, 5e-4, 7e-4]
-    x0, p, u = generate_stochastic_inputs(n)
+    #x0, p, u = generate_stochastic_inputs(n)
+    x0, p, u = generate_demo_inputs(n)
     xs, _ = sensitivity.analyze_sensitivity(x0, p, u, p_key, 0, t1=t1)
     stacked = einops.rearrange(xs, 't (d c) -> c d t', d=3)
     colors = []
     for i in range(n):
-        c = plt.plot(stacked[i, 0], label=f"Country {i}")[0].get_color()
+        c = plt.plot(np.exp(stacked[i, 0]), label=f"Country {i}")[0].get_color()
         colors.append(c)
 
     for dp in tqdm(eps):
@@ -29,12 +30,12 @@ def visualize_integration(p_key, savefig=None, n=3):
         # Iterate over nodes (countries)
         for i in range(n):
             # Plot perturbed currency values
-            plt.plot(stacked_perturb[i, 0], color=colors[i], zorder=-10, alpha=0.1)
+            plt.plot(np.exp(stacked_perturb[i, 0]), color=colors[i], zorder=-10, alpha=0.1)
     plt.legend()
     plt.xlabel('Time')
     plt.ylabel('$y$')
     #plt.yscale('symlog')
-    plt.ylim((-1, 1))
+    #plt.ylim((-1, 1))
     plt.title(r'Trajectory after Perturbing $\alpha$')
     plt.legend()
     plt.tight_layout()
@@ -44,7 +45,7 @@ def visualize_integration(p_key, savefig=None, n=3):
     plt.clf()
 
 
-def visualize_perturbation(n, t1, samples=10):
+def visualize_perturbation(n, t1, savefig=None, samples=10):
     data = {'eps': [], 'diff': []}
     eps = [1e-2, 1e-3, 1e-4, 1e-6, 1e-8, 1e-10, 1e-12, 1e-14, 1e-16]
     # Iterate over parameters
@@ -75,12 +76,15 @@ def visualize_perturbation(n, t1, samples=10):
     plt.ylabel("$\dfrac{1}{\epsilon} |x(p + \epsilon) - x(p)|$")
     plt.xlabel("$\epsilon$")
     plt.title("Parameter Sensitivity Analysis")
+    if savefig is not None:
+        plt.savefig(savefig)
     plt.show()
     return
 
 
 def run_perturbation(n, dp, p_key, t1):
-    x0, p, u = generate_stochastic_inputs(n)
+    #x0, p, u = generate_stochastic_inputs(n)
+    x0, p, u = generate_demo_inputs(n)
     xs, xs_perturb = sensitivity.analyze_sensitivity(x0, p, u, p_key, dp, t1=t1)
     diff = np.abs(np.subtract(xs_perturb, xs) / dp) # t x 3n
     # Iterate over countries
@@ -92,7 +96,7 @@ def run_perturbation(n, dp, p_key, t1):
 
 
 if __name__ == "__main__":
-    n = 3
+    n = 10
     t1 = 40
-    visualize_perturbation(n, t1)
-    #visualize_integration('alpha')
+    #visualize_perturbation(n, t1, savefig="perturbation.png")
+    visualize_integration('alpha', n=n, savefig="intergation.png")
