@@ -34,13 +34,13 @@ def tgcr_matrix_free(fhand, xf, pf, uf, b, tolrGCR, MaxItersGCR, epsMF, verbose=
     p_full = []
     Mp_full = [] 
     k = 0
+    f0 = fhand(xf, t=None, p=pf, u=uf)
     while (r_norms[k]/r_norms[0] > tolrGCR) and (k <= MaxItersGCR):
         # Use the residual as the first guess for the new search direction and multiply by M
         p = r.copy()
         epsilon=2*epsMF*np.sqrt(1+np.linalg.norm(xf,np.inf))/np.linalg.norm(p,np.inf) #NITSOL normal. great
 
         fepsMF  = fhand(xf+epsilon*p, t=None, p=pf, u=uf)
-        f0 = fhand(xf, t=None, p=pf, u=uf)
         Mp = (fepsMF - f0)/epsilon
         assert np.linalg.norm(Mp) > 0, "tgcr_matrix_free: f0 and fepsMF are the same"
         # Make the new Ap vector orthogonal to the previous Mp vectors,
