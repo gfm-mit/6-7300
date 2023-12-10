@@ -29,3 +29,12 @@ def plot_evolution(ans, n=3):
     plt.tight_layout()
     plt.show()
     return
+
+
+def plot_preconditioned_eigenvals(P, J):
+    K0 = np.round(sorted(np.log10(np.abs(np.linalg.eigvals(J)))), 1)
+    K1 = np.round(sorted(np.log10(np.abs(np.linalg.eigvals(P @ J)))), 1)
+    plt.hist(K0, bins=20)
+    plt.hist(K1, bins=20, alpha=0.5)
+    plt.show()
+    assert False, np.stack([K0, K1], axis=1)
