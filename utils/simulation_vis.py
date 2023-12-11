@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from domain_specific import evalf, jacobian
 
-def visualize(xs, p, u, savefig=None):
+def visualize(xs, p, u, savefig=None, t=None):
     n = xs.shape[1] // 3
     stacked = einops.rearrange(xs, 't (d c) -> c d t', d=3)
     x_norms = np.linalg.norm(xs, axis=1)
@@ -15,12 +15,15 @@ def visualize(xs, p, u, savefig=None):
     J_cond = list(tqdm([np.linalg.cond(j) for j in J]))
     # TODO: also somehow measure dissipativity (whether eigenspectrum is all negative)
     fig, axs = plt.subplots(3)
+    if t is None:
+        t = stacked.shape[2]
+    ts = np.linspace(0, t, stacked.shape[2])
     for i in range(n):
         plt.sca(axs[0])
-        color = plt.plot(stacked[i, 0], label=f"Country {i}")[0].get_color()
-        plt.plot(stacked[i, 1], color=color, dashes=[1,1])
+        color = plt.plot(ts, stacked[i, 0], label=f"Country {i}")[0].get_color()
+        plt.plot(ts, stacked[i, 1], color=color, dashes=[1,1])
         plt.sca(axs[1])
-        plt.plot(stacked[i, 2], color=color, alpha=0.25, linewidth=3, zorder=-10)
+        plt.plot(ts, stacked[i, 2], color=color, alpha=0.25, linewidth=3, zorder=-10)
     plt.sca(axs[0])
     plt.legend()
     plt.xlabel('time')
@@ -34,9 +37,9 @@ def visualize(xs, p, u, savefig=None):
     plt.title('$\mu$')
     plt.sca(axs[2])
     plt.title('Simulation Stats')
-    plt.plot(x_norms, color="turquoise", label="$|x|_2$")
-    plt.plot(F_cond, color="cornflowerblue", label="$|f|$")
-    plt.plot(J_cond, color="black", label="$|J||J^{-1}|$")
+    plt.plot(ts, x_norms, color="turquoise", label="$|x|_2$")
+    plt.plot(ts, F_cond, color="cornflowerblue", label="$|f|$")
+    plt.plot(ts, J_cond, color="black", label="$|J||J^{-1}|$")
     plt.legend()
     plt.xlabel('time')
     plt.yscale('log')
