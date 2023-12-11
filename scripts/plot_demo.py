@@ -25,7 +25,7 @@ def visualize_real(n, t1=100):
     stacked = einops.rearrange(xs, 't (d c) -> c d t', d=3)
     for i in range(n):
         plt.plot(np.exp(stacked[i, 0]), label=f"%s" % countries[i])
-    plt.title("Shock between USA and EUR")
+    plt.title("Shock between USA and IND")
     plt.ylabel("$y$")
     plt.xlabel("Time")
     plt.axvline(x=5000, linestyle='--', color='grey')
