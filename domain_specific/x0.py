@@ -25,11 +25,11 @@ def generate_demo_parameters(n, delta_t=1e-2, t=100, seed=5):
     # But doing it anyway for consistency
     gdps = pd.read_parquet('domain_specific/gdp.parquet')
 
-    tau1 = 1
-    tau2 = 1
+    tau1 = 0.25
+    tau2 = 0.25
     tau3 = 1
     sigma = (0.1 * sigmas.iloc[:n]).to_numpy() # Doesn't do anything without Weiner process
-    alpha = 1e-1
+    alpha = 2e-1
     gamma2 = 1 * np.ones([n])
 
     np.random.seed(seed)

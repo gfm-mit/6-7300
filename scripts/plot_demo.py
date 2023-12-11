@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import einops
 
-from domain_specific.x0 import generate_stochastic_real_inputs, generate_demo_inputs, generate_stochastic_inputs, generate_demo_inputs
+from domain_specific.x0 import generate_stochastic_real_inputs, generate_stochastic_inputs, generate_demo_inputs
 from domain_specific.evalf import evalf
 from dynamic import explicit, implicit
 
@@ -25,10 +25,13 @@ def visualize_real(n, t1=100):
     stacked = einops.rearrange(xs, 't (d c) -> c d t', d=3)
     for i in range(n):
         plt.plot(np.exp(stacked[i, 0]), label=f"%s" % countries[i])
+
     plt.title("Shock between USA and IND")
     plt.ylabel("$y$")
     plt.xlabel("Time")
     plt.axvline(x=5000, linestyle='--', color='grey')
+    plt.axvline(x=5500, linestyle='--', color='grey')
+    print(np.max(np.exp(stacked[0, 0, 5000:5500]) - np.exp(stacked[3, 0, 5000:5500])))
     plt.ylim((0.9, 1.1))
     plt.legend()
     plt.show()
