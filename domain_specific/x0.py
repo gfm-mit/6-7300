@@ -29,7 +29,7 @@ def generate_demo_parameters(n, delta_t=1e-2, t=100, seed=5):
     tau2 = 0.25
     tau3 = 1
     sigma = (0.1 * sigmas.iloc[:n]).to_numpy() # Doesn't do anything without Weiner process
-    alpha = 2e-1
+    alpha = 5e-1
     gamma2 = 1 * np.ones([n])
 
     np.random.seed(seed)
