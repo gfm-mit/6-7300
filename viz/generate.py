@@ -7,6 +7,7 @@ import numpy as np
 from dynamic import explicit
 from domain_specific.x0 import generate_stochastic_real_inputs, generate_demo_inputs
 from domain_specific.evalf import evalf
+from newton.from_julia import newton_julia_jacobian_free_wrapper
 
 
 def setup():
@@ -57,8 +58,11 @@ if __name__ == "__main__":
 
     # Generate data to visualize
     x0, p, u = generate_demo_inputs(10)
+    p_initial = p.copy()
+    p_initial['d'] = p_initial['d'][0, :, :]
+    x1 = newton_julia_jacobian_free_wrapper(x0, p_initial, u)
     kwargs = dict(
-        x0=x0,
+        x0=x1,
         p=p,
         u=u,
         t1=100,
