@@ -127,4 +127,4 @@ def plot_animation(p, u, x0, one_frame=True):
 if __name__ == "__main__":
     # Generate data to visualize
     x0, p, u = domain_specific.demo.generate_wobble_inputs(10)
-    plot_animation(p, u, x0, one_frame=True)
+    plot_animation(p, u, x0, one_frame=False)
