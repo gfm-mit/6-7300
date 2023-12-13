@@ -20,7 +20,7 @@ def generate_wobble_inputs(n, t=100, seed=5):
     p["tau2"] = 5e-3
     p["tau3"] = 1e2 # seems to give US wobble with 30 day period
 
-    p['alpha'] = 1e+1 # determines the eventual shift
+    p['alpha'] = 1e-1 # determines the eventual shift
     p['sigma'] = np.zeros([n])
     p['gamma2'] = .4 * np.ones([n]) # from IMF estimates
 
