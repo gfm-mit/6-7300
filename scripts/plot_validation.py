@@ -9,6 +9,7 @@ from sklearn.metrics import mean_squared_error
 from domain_specific.x0 import generate_demo_inputs
 from dynamic import explicit
 from domain_specific.evalf import evalf
+import warnings
 
 
 countries = {0: 'USA', 1: 'EUR', 2: 'IND', 3: 'CHN', 4: 'MEX', 5: 'CAN', 6: 'BRA', 7: 'SGP', 8: 'AUS', 9: 'GHA'}
@@ -63,7 +64,9 @@ def validate_jcurve(x0, p, u):
         imports = np.sum(x_ij, axis=0)
         N = exports / imports
         ns.append(np.log(N[2]))
-    popt, pcov = curve_fit(bahmani_oskooee, stacked[2, 0, 1000:len(xs)-1], ns)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        popt, pcov = curve_fit(bahmani_oskooee, stacked[2, 0, 1000:len(xs)-1], ns)
     tb = jcurve(popt, stacked[2, 0, :])
     mse = mean_squared_error(ns, tb)
     print(f"MSE: {mse}%")
