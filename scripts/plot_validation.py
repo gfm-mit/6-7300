@@ -1,8 +1,9 @@
-import similaritymeasures
 import numpy as np
 import matplotlib.pyplot as plt
 import einops
 from scipy.optimize import curve_fit
+from scipy.stats import sem
+from sklearn.metrics import mean_squared_error
 
 
 from domain_specific.x0 import generate_demo_inputs
@@ -13,10 +14,35 @@ from domain_specific.evalf import evalf
 countries = {0: 'USA', 1: 'EUR', 2: 'IND', 3: 'CHN', 4: 'MEX', 5: 'CAN', 6: 'BRA', 7: 'SGP', 8: 'AUS', 9: 'GHA'}
 
 # For curve_fit
-x0, p, u = generate_demo_inputs(10)
+# Bad but sue me
+_, p_global, _ = generate_demo_inputs(10)
 
 
-def validate_jcurve():
+def run_validation(n=10):
+    fig, axs = plt.subplots(2, 4)
+    x0, p, u = generate_demo_inputs(n)
+    errs = []
+    for i, a in enumerate([2e-1, 3e-1, 4e-1, 5e-1, 6e-1, 7e-1, 8e-1, 9e-1]):
+        p['alpha'] = a
+        tb, ns, mse = validate_jcurve(x0, p, u)
+        axs[i // 4, i % 4].plot(ns[3000:6000], label="Ours" if i == 3 else "", color="blue", alpha=0.3)
+        axs[i // 4, i % 4].plot(tb[3000:6000], label='Bahmani-Oskooee 1985' if i == 3 else "", color="green", alpha=0.5)
+        axs[i // 4, i % 4].set_title(r'$\alpha=%.1f$, MSE %.5f' % (a, mse))
+        axs[i // 4, i % 4].set_ylim((-0.4, 0.2))
+        if i == 0 or i == 4:
+            axs[i // 4, i % 4].set_ylabel(r"$\text{log}\frac{\text{exports}}{\text{imports}}$")
+        if i == 3:
+            axs[i // 4, i % 4].legend(loc="upper right")
+        if i >= 4:
+            axs[i // 4, i % 4].set_xlabel("Time (days)")
+        errs.append(mse)
+    fig.suptitle(r'Fit of Impulse Response, MSE %.5f $\pm$ %.5f' % (np.mean(errs), sem(errs)))
+    plt.show()
+    return
+
+
+def validate_jcurve(x0, p, u):
+    # For USA/IND impulse response
     kwargs = dict(
         x0=x0,
         p=p,
@@ -39,18 +65,9 @@ def validate_jcurve():
         ns.append(np.log(N[2]))
     popt, pcov = curve_fit(bahmani_oskooee, stacked[2, 0, 1000:len(xs)-1], ns)
     tb = jcurve(popt, stacked[2, 0, :])
-    plt.plot(ns, label="Ours")
-    exp_data = np.array([[t, n] for t, n in enumerate(ns)])
-    num_data = np.array([[t, j] for t, j in enumerate(tb)])
-    d = similaritymeasures.mae(exp_data, num_data)
-    print(d)
-    d = similaritymeasures.mse(exp_data, num_data)
-    print(d)
-    plt.legend()
-    plt.ylabel(r"log($\frac{\text{exports}}{\text{imports}}$)")
-    plt.xlabel("Time (days)")
-    plt.show()
-    return
+    mse = mean_squared_error(ns, tb)
+    print(f"MSE: {mse}%")
+    return tb, ns, mse
 
 
 def jcurve(popt, er):
@@ -58,15 +75,14 @@ def jcurve(popt, er):
     tb = []
     for t in range(1000, len(er)-1):
         # er is log of currency value
-        tb.append((beta * np.log(p['g'][0])) + (gamma * np.log(p['g'][2])) + (lambd * er[t]) + eps)
-    plt.plot(tb, label='Bahmani-Oskooee 1985')
+        tb.append((beta * np.log(p_global['g'][0])) + (gamma * np.log(p_global['g'][2])) + (lambd * er[t]) + eps)
     return tb
 
 
 def bahmani_oskooee(er, beta, gamma, lambd, eps):
-    return (beta * np.log(p['g'][0])) + (gamma * np.log(p['g'][2])) + (lambd * er) + eps
+    return (beta * np.log(p_global['g'][0])) + (gamma * np.log(p_global['g'][2])) + (lambd * er) + eps
 
 
 if __name__ == "__main__":
-    validate_jcurve()
+    run_validation()
 
