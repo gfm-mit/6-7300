@@ -29,14 +29,15 @@ def setup():
 
 
 def render_frame(frame_idx, p, u, xs, locs, ax, xms):
-    T = frame_idx * 300
+    T = frame_idx * 333
     ax.clear()
     ax.stock_img()
     p_demo = p.copy()
     p_demo['d'] = p_demo['d'][T, :, :]
+    print("T:", T)
     state = xs[T]
     x_ij = xms[T]
-    sizes = 300 * np.exp(2 * (state - xs[0]))
+    sizes = 300 * np.exp(1 * (state - xs[0]))
     for idx, row in locs.iterrows():
         size = sizes[idx]
         # Plot nodes
@@ -74,8 +75,8 @@ def render_frame(frame_idx, p, u, xs, locs, ax, xms):
 
             e_x = x_ij[idx, idx_other] / xms[2, idx, idx_other]
             e_m = x_ij[idx_other, idx] / xms[2, idx_other, idx]
-            x_width = 20. * np.maximum(0., .2 + np.log(e_x))
-            m_width = 20. * np.maximum(0., .2 + np.log(e_m))
+            x_width = 40. * np.maximum(0., .1 + np.log(e_x))
+            m_width = 40. * np.maximum(0., .1 + np.log(e_m))
 
 
             segments = np.stack([coords[:-1], coords[1:]], axis=1)
@@ -99,13 +100,13 @@ def plot_animation(p, u, x0, one_frame=True):
     p_initial = p.copy()
     p_initial['d'] = p_initial['d'][0, :, :]
     x1 = newton.from_julia.newton_julia_jacobian_free_wrapper(x0, p_initial, u)
-    t1 = 200
+    t1 = 100
     kwargs = dict(
         x0=x1,
         p=p,
         u=u,
         t1=t1,
-        delta_t=2e-2,
+        delta_t=1e-2,
         f_step=explicit.rk4,
         demo=True
     )
@@ -121,9 +122,9 @@ def plot_animation(p, u, x0, one_frame=True):
         ani = FuncAnimation(fig, render_frame, frames=range(30), fargs=(
             p, u, xs, locs, ax, xms,
             ), interval=10000)
-        ani.save('animation.mp4', fps=30)
+        ani.save('animation.mp4', fps=10)
 
 if __name__ == "__main__":
     # Generate data to visualize
     x0, p, u = generate_demo_inputs(10)
-    plot_animation(p, u, x0, one_frame=True)
+    plot_animation(p, u, x0, one_frame=False)

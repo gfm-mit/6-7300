@@ -10,6 +10,8 @@ import pathlib
 from tqdm import tqdm
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
+from domain_specific.jacobian import evalJacobian, finiteDifferenceJacobian
+from domain_specific.x0 import generate_demo_inputs
 from dynamic import explicit
 from domain_specific.evalf import evalf
 import newton.from_julia
@@ -158,3 +160,94 @@ def get_param_slope_delta(x0, p, u, param, k):
     delta = delta - delta[0]
     delta = np.abs(delta[-1] - delta[-2]) / delta_t
     return delta
+
+
+def multi_tune(x0, p, u):
+    fig, axs = plt.subplots(3)
+    plt.sca(axs[0])
+    tune_slope_params(x0, p, u)
+    plt.sca(axs[1])
+    tune_final_params(x0, p, u)
+    plt.sca(axs[2])
+    tune_wobble_params(x0, p, u)
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_spectrum(u, p_initial, x1):
+    J1 = finiteDifferenceJacobian(evalf, x1, p_initial, u)
+    idx = np.arange(J1.shape[0])
+    J1 = J1[idx % 10 < 4]
+    J1 = J1[:, idx % 10 < 4]
+    lambda1 = np.linalg.eigvals(J1)
+    lambda1 = (10 + np.log(lambda1)).real * np.exp(1j*np.log(lambda1).imag)
+    plt.scatter(lambda1.real, lambda1.imag, alpha=0.5)
+    ax = plt.gca()
+    ax.spines['left'].set_position('zero')
+    ax.spines['bottom'].set_position('zero')
+
+    # Eliminate upper and right axes
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+
+    # Show ticks in the left and lower axes only
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+
+
+def test_spectrum(x0, p, u, k, v):
+    p_initial = p.copy()
+    p_initial['d'] = p_initial['d'][0, :, :]
+    x1 = newton.from_julia.newton_julia_jacobian_free_wrapper(x0, p_initial, u)
+
+    p_final = p.copy()
+    p_final['d'] = p_final['d'][-1, :, :]
+    plot_spectrum(u, p_final, x1)
+    x2 = newton.from_julia.newton_julia_jacobian_free_wrapper(x1, p_final, u)
+
+    p_test = p.copy()
+    p_test['d'] = p_test['d'][-1, :, :]
+    p_test[k] = v
+    plot_spectrum(u, p_test, x1)
+    x3 = newton.from_julia.newton_julia_jacobian_free_wrapper(x1, p_test, u)
+
+    plt.xlabel("real")
+    plt.ylabel("imag")
+    delta = x3 - x2
+    delta = np.round(delta[:4], 3)
+    plt.title("{}, US: {}, IN: {}".format(k, delta[0], delta[2]))
+
+
+def multi_spectrum(x0, p, u):
+    epsilon = np.exp(1)
+    fig, axs = plt.subplots(2, 2)
+    axs = axs.flatten()
+    plt.sca(axs[0])
+    test_spectrum(x0, p, u, "tau2", p['tau2'] * epsilon)
+    plt.sca(axs[1])
+    test_spectrum(x0, p, u, "tau1", p['tau1'] * epsilon)
+    plt.sca(axs[2])
+    test_spectrum(x0, p, u, "tau3", p['tau3'] * epsilon)
+    plt.sca(axs[3])
+    test_spectrum(x0, p, u, "alpha", p['alpha'] * epsilon)
+
+    p_initial = p.copy()
+    p_initial['d'] = p_initial['d'][0, :, :]
+    x1 = newton.from_julia.newton_julia_jacobian_free_wrapper(x0, p_initial, u)
+    p_final = p.copy()
+    p_final['d'] = p_final['d'][-1, :, :]
+    x2 = newton.from_julia.newton_julia_jacobian_free_wrapper(x1, p_final, u)
+    delta = x2 - x1
+    delta = np.round(delta[:4], 3)
+    plt.suptitle("US: {}, IN: {}".format(delta[0], delta[2]))
+
+    plt.tight_layout()
+    plt.show()
+
+
+if __name__ == "__main__":
+    # Generate data to visualize
+    x0, p, u = generate_demo_inputs(10)
+    #np.random.seed()
+    #multi_tune(x0, p, u)
+    multi_spectrum(x0, p, u)
