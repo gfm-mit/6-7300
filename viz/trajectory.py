@@ -43,7 +43,7 @@ def plot_trajectory(p, u, x0):
         offset = -xs[0, v]
         color = plt.plot(ts, offset + xs[:, v], label=k)[0].get_color()
         #plt.plot(ts, offset + xs[:, 10 + v], dashes=[1,1], color=color)
-        xm_eu = np.log(xms[:, v, 1])
+        xm_eu = np.log(xms[:, v, 1] + .000000001)
         if v != 1:
             plt.plot(ts, xm_eu, color=color, dashes=[1,1])
 
