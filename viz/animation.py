@@ -12,8 +12,8 @@ import pathlib
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 from dynamic import explicit
-from domain_specific.x0 import generate_demo_inputs
 import newton.from_julia
+import domain_specific.demo
 
 def setup():
     # Set up map
@@ -126,5 +126,5 @@ def plot_animation(p, u, x0, one_frame=True):
 
 if __name__ == "__main__":
     # Generate data to visualize
-    x0, p, u = generate_demo_inputs(10)
+    x0, p, u = domain_specific.demo.generate_wobble_inputs(10)
     plot_animation(p, u, x0, one_frame=False)

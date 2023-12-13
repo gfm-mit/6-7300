@@ -11,11 +11,8 @@ from tqdm import tqdm
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 from dynamic import explicit
-from domain_specific.x0 import generate_demo_inputs
-from domain_specific.evalf import evalf
-import utils.simulation_vis
+import domain_specific.demo
 import newton.from_julia
-import viz.tuning
 
 
 def plot_trajectory(p, u, x0):
@@ -55,6 +52,6 @@ def plot_trajectory(p, u, x0):
 
 if __name__ == "__main__":
     # Generate data to visualize
-    x0, p, u = generate_demo_inputs(10)
+    x0, p, u = domain_specific.demo.generate_wobble_inputs(10)
     np.random.seed()
     plot_trajectory(p, u, x0)

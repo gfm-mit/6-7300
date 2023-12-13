@@ -10,8 +10,8 @@ import pathlib
 from tqdm import tqdm
 
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
-from domain_specific.jacobian import evalJacobian, finiteDifferenceJacobian
-from domain_specific.x0 import generate_demo_inputs
+from domain_specific.jacobian import finiteDifferenceJacobian
+import domain_specific.demo
 from dynamic import explicit
 from domain_specific.evalf import evalf
 import newton.from_julia
@@ -102,6 +102,6 @@ def multi_spectrum(x0, p, u):
 
 if __name__ == "__main__":
     # Generate data to visualize
-    x0, p, u = generate_demo_inputs(10)
+    x0, p, u = domain_specific.demo.generate_wobble_inputs(10)
     #np.random.seed()
     multi_spectrum(x0, p, u)
