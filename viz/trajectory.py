@@ -34,6 +34,7 @@ def plot_trajectory(p, u, x0):
     xms = np.stack(list(explicit.simulate_exports(xs, **kwargs)))
     xs = np.stack(xs)
     ts = np.linspace(0, t1, xs.shape[0])
+    fig, axs = plt.subplots(3)
     for k, v in dict(
         US=0,
         EU=1,
@@ -41,13 +42,35 @@ def plot_trajectory(p, u, x0):
         CN=3,
     ).items():
         offset = -xs[0, v]
+        plt.sca(axs[0])
         color = plt.plot(ts, offset + xs[:, v], label=k)[0].get_color()
-        #plt.plot(ts, offset + xs[:, 10 + v], dashes=[1,1], color=color)
-        xm_eu = np.log(xms[:, v, 1] + .000000001)
-        if v != 1:
-            plt.plot(ts, xm_eu, color=color, dashes=[1,1])
+        if v != 0:
+            plt.sca(axs[1])
+            xm_us = np.log(xms[:, 0, v])
+            xm_us[:10] = np.nan
+            xm_us = xm_us - xm_us[10]
+            plt.plot(ts, xm_us, color=color, dashes=[1,1])
+        if v != 2:
+            plt.sca(axs[2])
+            xm_in = np.log(xms[:, 2, v])
+            xm_in[:10] = np.nan
+            xm_in = xm_in - xm_in[10]
+            plt.plot(ts, xm_in, color=color, dashes=[1,1])
 
+    plt.sca(axs[0])
+    plt.title("Currency Values")
+    plt.xlabel("days since shock")
+    plt.ylabel("log change")
     plt.legend()
+    plt.sca(axs[1])
+    plt.title("US Export Volume")
+    plt.xlabel("days since shock")
+    plt.ylabel("log change")
+    plt.sca(axs[2])
+    plt.title("IN Export Volume")
+    plt.xlabel("days since shock")
+    plt.ylabel("log change")
+    plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":

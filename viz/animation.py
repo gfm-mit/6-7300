@@ -54,10 +54,10 @@ def render_frame(frame_idx, p, u, xs, locs, ax, xms):
         ax.scatter(row['long'], row['lat'],
                    s=size, color=color, 
                    transform=ccrs.PlateCarree(), zorder=10)
-        ax.text(row['long']+5, row['lat'],
+        ax.text(row['long']-10, row['lat']+5,
                 row['country'],
-                ha='left',
-                va='center',
+                ha='right',
+                va='bottom',
                 transform=ccrs.PlateCarree(), zorder=11)
         # Plot edges
         if idx not in [0, 2]:
@@ -127,4 +127,4 @@ def plot_animation(p, u, x0, one_frame=True):
 if __name__ == "__main__":
     # Generate data to visualize
     x0, p, u = domain_specific.demo.generate_wobble_inputs(10)
-    plot_animation(p, u, x0, one_frame=False)
+    plot_animation(p, u, x0, one_frame=True)
