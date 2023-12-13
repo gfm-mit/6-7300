@@ -1,7 +1,7 @@
+import einops
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from scipy.signal import argrelextrema
 
 import sys
 import os
@@ -17,163 +17,6 @@ from domain_specific.evalf import evalf
 import newton.from_julia
 
 
-def get_param_final_delta(x0, p, u, param, k):
-    p_initial = p.copy()
-    p_initial['d'] = p['d'][0, :, :]
-    p_initial[param] = p[param] * k
-    x1 = newton.from_julia.newton_julia_jacobian_free_wrapper(x0, p_initial, u)
-
-    p_final = p.copy()
-    p_final['d'] = p['d'][-1, :, :]
-    p_final[param] = p[param] * k
-    x2 = newton.from_julia.newton_julia_jacobian_free_wrapper(x0, p_final, u)
-
-    delta = x2 - x1
-    delta = delta[2] - delta[0]
-    return delta
-
-
-def tune_final_params(x0, p, u):
-    for param in "tau1 tau2 tau3 alpha".split():
-        results = []
-        for k in np.geomspace(7e-1, 2e0, 20):
-            delta = get_param_final_delta(x0, p, u, param, k)
-            results += [dict(
-                k=k,
-                delta=delta,
-                noise_x=1e-4*np.random.normal(),
-                noise_y=1e-4*np.random.normal(),
-            )]
-        results = pd.DataFrame(results)
-        plt.plot(results.k, results.delta, label=param)
-        plt.scatter(results.k + results.noise_x, results.delta + results.noise_y)
-
-    delta = get_param_final_delta(x0, p, u, "alpha", 1)
-    plt.legend()
-    plt.xscale('log')
-    plt.title("final:{:.2f}".format(delta))
-
-
-def tune_wobble_params(x0, p, u):
-    for param in "tau1 tau2 tau3 alpha".split():
-        results = []
-        for k in tqdm(np.geomspace(1e-2, 1e2, 20)):
-            try:
-                delta = get_param_wobble_delta(x0, p, u, param, k)
-            except AssertionError:
-                delta = np.inf
-            delta = np.clip(delta, 0, 1e1)
-
-            results += [dict(
-                k=k,
-                delta=delta,
-                noise_x=1e-2*np.random.normal(),
-                noise_y=1e-2*np.random.normal(),
-            )]
-        results = pd.DataFrame(results)
-        plt.plot(results.k, results.delta, label=param)
-        plt.scatter(results.k + results.noise_x, results.delta + results.noise_y)
-    delta = get_param_wobble_delta(x0, p, u, "alpha", 1)
-    plt.legend()
-    plt.xscale('log')
-    plt.title("wobble:{:.2f}".format(delta))
-
-
-def get_param_wobble_delta(x0, p, u, param, k):
-    p_initial = p.copy()
-    p_initial['d'] = p_initial['d'][0, :, :]
-    p_initial[param] *= k
-    x1 = newton.from_julia.newton_julia_jacobian_free_wrapper(x0, p_initial, u)
-
-    p_final = p.copy()
-    p_final[param] *= k
-
-    t1 = 200
-    kwargs = dict(
-                x0=x1,
-                p=p_final,
-                u=u,
-                t1=t1,
-                delta_t=2e-1,
-                f_step=explicit.rk4,
-                demo=True
-            )
-    xs = np.array(list(explicit.simulate(**kwargs)))
-    xs = np.stack(xs)
-    usd = xs[:, 0]
-    inr = xs[:, 2]
-    delta = inr - usd
-    delta = delta - delta[0]
-    delta = np.abs(delta)
-    return argrelextrema(delta, np.greater)[0].shape[0]
-
-
-def tune_slope_params(x0, p, u):
-    for param in "tau1 tau2 tau3 alpha".split():
-        if param == "alpha":
-            continue
-        results = []
-        for k in tqdm(np.geomspace(1e-2, 1e2, 20)):
-            delta = get_param_slope_delta(x0, p, u, param, k)
-
-            results += [dict(
-                k=k,
-                delta=delta,
-                noise_x=1e-3*np.random.normal(),
-                noise_y=1e-3*np.random.normal(),
-            )]
-        results = pd.DataFrame(results)
-        plt.plot(results.k, results.delta, label=param)
-        plt.scatter(results.k + results.noise_x, results.delta + results.noise_y)
-    delta = get_param_slope_delta(x0, p, u, "alpha", 1)
-    plt.legend()
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.title("slope:{:.2f}".format(delta))
-
-
-def get_param_slope_delta(x0, p, u, param, k):
-    p_initial = p.copy()
-    p_initial['d'] = p_initial['d'][0, :, :]
-    p_initial[param] *= k
-    x1 = newton.from_julia.newton_julia_jacobian_free_wrapper(x0, p_initial, u)
-
-    p_final = p.copy()
-    p_final[param] *= k
-
-    t1 = 60
-    delta_t = 6e-2
-    kwargs = dict(
-                x0=x1,
-                p=p_final,
-                u=u,
-                t1=t1,
-                delta_t=delta_t,
-                f_step=explicit.rk4,
-                demo=True
-            )
-    xs = np.array(list(explicit.simulate(**kwargs)))
-    xs = np.stack(xs)
-    usd = xs[:, 0]
-    inr = xs[:, 2]
-    delta = inr - usd
-    delta = delta - delta[0]
-    delta = np.abs(delta[-1] - delta[-2]) / delta_t
-    return delta
-
-
-def multi_tune(x0, p, u):
-    fig, axs = plt.subplots(3)
-    plt.sca(axs[0])
-    tune_slope_params(x0, p, u)
-    plt.sca(axs[1])
-    tune_final_params(x0, p, u)
-    plt.sca(axs[2])
-    tune_wobble_params(x0, p, u)
-    plt.tight_layout()
-    plt.show()
-
-
 def plot_spectrum(u, p_initial, x1):
     J1 = finiteDifferenceJacobian(evalf, x1, p_initial, u)
     idx = np.arange(J1.shape[0])
@@ -182,6 +25,10 @@ def plot_spectrum(u, p_initial, x1):
     lambda1 = np.linalg.eigvals(J1)
     lambda1 = (10 + np.log(lambda1)).real * np.exp(1j*np.log(lambda1).imag)
     plt.scatter(lambda1.real, lambda1.imag, alpha=0.5)
+    center_spines()
+
+
+def center_spines():
     ax = plt.gca()
     ax.spines['left'].set_position('zero')
     ax.spines['bottom'].set_position('zero')
@@ -195,7 +42,9 @@ def plot_spectrum(u, p_initial, x1):
     ax.yaxis.set_ticks_position('left')
 
 
-def test_spectrum(x0, p, u, k, v):
+def test_spectrum(x0, p, u, k, v, axs):
+    plt.sca(axs[0])
+
     p_initial = p.copy()
     p_initial['d'] = p_initial['d'][0, :, :]
     x1 = newton.from_julia.newton_julia_jacobian_free_wrapper(x0, p_initial, u)
@@ -207,39 +56,45 @@ def test_spectrum(x0, p, u, k, v):
 
     p_test = p.copy()
     p_test['d'] = p_test['d'][-1, :, :]
-    p_test[k] = v
-    plot_spectrum(u, p_test, x1)
+    if k == "BACKWARDS":
+        p_test = p_initial.copy()
+    elif k == "d":
+        p_test['d'][2, 0] *= v
+        p_test['d'][0, 2] *= v
+    else:
+        p_test[k] = v
     x3 = newton.from_julia.newton_julia_jacobian_free_wrapper(x1, p_test, u)
+    x4 = explicit.rk4(x1, p_test, u, 1e-6)
+    plot_spectrum(u, p_test, x1)
 
     plt.xlabel("real")
     plt.ylabel("imag")
+    plt.title(k)
+
+    plt.sca(axs[1])
     delta = x3 - x2
     delta = np.round(delta[:4], 3)
-    plt.title("{}, US: {}, IN: {}".format(k, delta[0], delta[2]))
+    plt.scatter(delta[:4], np.arange(4), color="plum")
+    f2 = evalf(x1, None, p_final, u)
+    f3 = evalf(x1, None, p_test, u)
+    delta_f = (f3-f2)[20:24]
+    plt.scatter(1e-2*delta_f, np.arange(4), color="limegreen")
+    for i in range(4):
+        plt.text(delta[i], i, "US EU IN CN".split()[i])
+    plt.xscale('symlog', linthresh=1e-2)
+    center_spines()
 
 
 def multi_spectrum(x0, p, u):
     epsilon = np.exp(1)
-    fig, axs = plt.subplots(2, 2)
-    axs = axs.flatten()
-    plt.sca(axs[0])
-    test_spectrum(x0, p, u, "tau2", p['tau2'] * epsilon)
-    plt.sca(axs[1])
-    test_spectrum(x0, p, u, "tau1", p['tau1'] * epsilon)
-    plt.sca(axs[2])
-    test_spectrum(x0, p, u, "tau3", p['tau3'] * epsilon)
-    plt.sca(axs[3])
-    test_spectrum(x0, p, u, "alpha", p['alpha'] * epsilon)
-
-    p_initial = p.copy()
-    p_initial['d'] = p_initial['d'][0, :, :]
-    x1 = newton.from_julia.newton_julia_jacobian_free_wrapper(x0, p_initial, u)
-    p_final = p.copy()
-    p_final['d'] = p_final['d'][-1, :, :]
-    x2 = newton.from_julia.newton_julia_jacobian_free_wrapper(x1, p_final, u)
-    delta = x2 - x1
-    delta = np.round(delta[:4], 3)
-    plt.suptitle("US: {}, IN: {}".format(delta[0], delta[2]))
+    fig, axs = plt.subplots(2, 6)
+    axs = axs.transpose()
+    test_spectrum(x0, p, u, "tau1", p['tau1'] * epsilon, axs[1])
+    test_spectrum(x0, p, u, "tau2", p['tau2'] * epsilon, axs[2])
+    test_spectrum(x0, p, u, "tau3", p['tau3'] * epsilon, axs[3])
+    test_spectrum(x0, p, u, "alpha", p['alpha'] * epsilon, axs[4])
+    test_spectrum(x0, p, u, "d", epsilon, axs[5])
+    test_spectrum(x0, p, u, "BACKWARDS", epsilon, axs[0])
 
     plt.tight_layout()
     plt.show()
@@ -249,5 +104,4 @@ if __name__ == "__main__":
     # Generate data to visualize
     x0, p, u = generate_demo_inputs(10)
     #np.random.seed()
-    #multi_tune(x0, p, u)
     multi_spectrum(x0, p, u)
