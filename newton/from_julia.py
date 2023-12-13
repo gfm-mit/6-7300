@@ -95,5 +95,6 @@ def newton_julia_jacobian_free_wrapper(x0, p, u):
             tolrGCR=1e-4,
             MaxItersGCR=1e5,
             eps=1e-4,
-        ))
+        ),
+        verbose=False)
     return x1

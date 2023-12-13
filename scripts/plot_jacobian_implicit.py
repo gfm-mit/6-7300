@@ -39,7 +39,7 @@ def plot_eps_effect():
 
 def plot_mem():
     #f_size, J_size, f_peak, J_peak = measure_mem(range(2, 100))
-    f_size, J_size, f_peak, J_peak = measure_mem(range(2, 10))
+    f_size, J_size, f_peak, J_peak = measure_mem(range(3, 100))
     color = plt.plot(f_size, label="Implicit Jacobian")[0].get_color()
     plt.plot(f_peak, color=color, dashes=[1,1], zorder=20)
     color = plt.plot(J_size, label="Explicit Jacobian")[0].get_color()
@@ -49,13 +49,13 @@ def plot_mem():
     plt.ylabel("Memory (bytes)")
     plt.xscale('log')
     plt.yscale('log')
-    plt.title("Memory improvement using implicit Jacobian")
+    plt.title("Memory Improvement using Implicit Jacobian")
     return
 
 
 def plot_speed():
     #f_time, J_time = measure_speed(range(2, 1000))
-    f_time, J_time = measure_speed(range(2, 100))
+    f_time, J_time = measure_speed(range(3, 100))
     plt.plot(f_time, label="Implicit Jacobian")
     plt.plot(J_time, label="Explicit Jacobian")
     plt.legend()
@@ -63,16 +63,16 @@ def plot_speed():
     plt.ylabel("Time to compute Jacobian (s)")
     plt.xscale('log')
     plt.yscale('log')
-    plt.title("Speed improvement using implicit Jacobian")
+    plt.title("Speed Improvement using Implicit Jacobian")
     return
 
 if __name__ == '__main__':
     plot_speed()
     plt.savefig('implicit_jacobian_speed.png', bbox_inches='tight')
     plt.show()
-    plot_eps_effect()
-    plt.savefig('implicit_jacobian_eps.png', bbox_inches='tight')
-    plt.show()
+    #plot_eps_effect()
+    #plt.savefig('implicit_jacobian_eps.png', bbox_inches='tight')
+    #plt.show()
     plot_mem()
     plt.savefig('implicit_jacobian_mem.png', bbox_inches='tight')
     plt.show()

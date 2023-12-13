@@ -33,7 +33,7 @@ def get_exports_for_loops(y_tilde, p):
     return x_xm
 
 
-def evalf(x, t, p, u):
+def evalf(x, t, p, u, yield_intermediates=False):
     """
     Removed gamma1 and nu
     Removed y_w, P_i and P_j
@@ -66,16 +66,11 @@ def evalf(x, t, p, u):
         y_tilde.round(3)
     )
 
-    # initialize node quantities
-    delt_true_currency = np.zeros([n])
-    delt_eff_currency = np.zeros([n])
-    delt_currency_drift = np.zeros([n])
-
     # initialize component quantities
     x_ij = get_exports(y_tilde, p)
 
     # update node quantities
-    delt_true_currency = mu - y / p['tau3']
+    delt_true_currency = mu - y / p['tau3'] # No Weiner process
     delt_eff_currency = (y - y_tilde) / p['tau1']
     exports = np.sum(x_ij, axis=1)
     imports = np.sum(x_ij, axis=0)
@@ -88,6 +83,8 @@ def evalf(x, t, p, u):
         delt_eff_currency,
         delt_currency_drift,
         ])
+    if yield_intermediates:
+        return x_dot, x_ij
     return x_dot
 
 

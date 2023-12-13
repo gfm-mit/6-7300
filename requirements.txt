@@ -8,3 +8,7 @@ scipy
 sdeint
 seaborn
 tqdm
+cartopy
+fastparquet
+ffmpeg
+scikit-learn
