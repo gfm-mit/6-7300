@@ -31,3 +31,15 @@ def simulate(x0, p, u, t1, delta_t, f_step=forward_euler, demo=False):
             # TODO: remove this copy
             x1 = f_step(x1.copy(), p, u, delta_t)
         yield x1
+
+def simulate_exports(xs, p, u, t1, delta_t, x0="ignored", f_step="ignored", demo="ignored"):
+    ts = list(np.arange(0, t1, delta_t)[1:]) + [t1]
+    p_demo = p.copy()
+    p_demo['d'] = p_demo['d'][0, :, :]
+    _, xm = evalf(xs[0], None, p_demo, u, yield_intermediates=True)
+    yield xm
+    for t, x in zip(ts, xs):
+        p_demo = p.copy()
+        p_demo['d'] = p_demo['d'][int(t / delta_t) - 1, :, :]
+        _, xm = evalf(x, None, p_demo, u, yield_intermediates=True)
+        yield xm
