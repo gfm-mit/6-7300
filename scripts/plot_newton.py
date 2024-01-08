@@ -1,6 +1,7 @@
 import sys
 import os
 import pathlib
+sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 
 import time
 import matplotlib.pyplot as plt

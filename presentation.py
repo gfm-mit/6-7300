@@ -36,11 +36,11 @@ def cue_card(text):
 if __name__ == "__main__":
     # Generate data to visualize
     x0, p, u = domain_specific.demo.generate_wobble_inputs(10)
-    np.random.seed()
-    cue_card("Ready to Begin Simulation")
-    viz.trajectory.plot_trajectory(p, u, x0)
-    cue_card("Movie Rendering is Too Slow to do in Real Time")
-    #viz.animation.plot_animation(p, u, x0, one_frame=False)
-    movie_file = 'animation.mp4'
-    subprocess.run(['open', movie_file])
+    #np.random.seed()
+    #cue_card("Ready to Begin Simulation")
+    #viz.trajectory.plot_trajectory(p, u, x0)
+    #cue_card("Movie Rendering is Too Slow to do in Real Time")
+    ##viz.animation.plot_animation(p, u, x0, one_frame=False)
+    #movie_file = 'animation.mp4'
+    #subprocess.run(['open', movie_file])
     scripts.plot_validation.run_validation()

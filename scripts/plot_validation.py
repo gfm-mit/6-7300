@@ -26,10 +26,10 @@ def run_validation(n=10):
     for i, a in enumerate([2e-1, 3e-1, 4e-1, 5e-1, 6e-1, 7e-1, 8e-1, 9e-1]):
         p['alpha'] = a
         tb, ns, mse = validate_jcurve(x0, p, u)
-        axs[i // 4, i % 4].plot(ns[3000:6000], label="Ours" if i == 3 else "", color="blue", alpha=0.3)
-        axs[i // 4, i % 4].plot(tb[3000:6000], label='Bahmani-Oskooee 1985' if i == 3 else "", color="green", alpha=0.5)
-        axs[i // 4, i % 4].set_title(r'$\alpha=%.1f$, MSE %.5f' % (a, mse))
-        axs[i // 4, i % 4].set_ylim((-0.4, 0.2))
+        axs[i // 4, i % 4].plot(ns[3900:5000], label="Ours" if i == 3 else "", color="blue", alpha=0.3)
+        axs[i // 4, i % 4].plot(tb[3900:5000], label='Bahmani-\nOskooee\n 1985' if i == 3 else "", color="green", alpha=0.5)
+        axs[i // 4, i % 4].set_title('$\\alpha=%.1f$\nMSE %.2e' % (a, mse))
+        axs[i // 4, i % 4].set_ylim((-0.35, 0.15))
         if i == 0 or i == 4:
             axs[i // 4, i % 4].set_ylabel(r"$\text{log}\frac{\text{exports}}{\text{imports}}$")
         if i == 3:
@@ -37,7 +37,8 @@ def run_validation(n=10):
         if i >= 4:
             axs[i // 4, i % 4].set_xlabel("Time (days)")
         errs.append(mse)
-    fig.suptitle(r'Fit of Impulse Response, MSE %.5f $\pm$ %.5f' % (np.mean(errs), sem(errs)))
+    fig.suptitle(r'Fit of Impulse Response, MSE %.2e $\pm$ %.5f' % (np.mean(errs), sem(errs)))
+    plt.tight_layout()
     plt.show()
     return
 

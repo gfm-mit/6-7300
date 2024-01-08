@@ -1,3 +1,4 @@
+import time
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -30,7 +31,9 @@ def plot_trajectory(p, u, x0):
         demo=True
     )
     # NOTE: the shock is a drop in trade frictions between the two countries
+    tic = time.time()
     xs = np.array(list(explicit.simulate(**kwargs)))
+    assert False, time.time() - tic
     xms = np.stack(list(explicit.simulate_exports(xs, **kwargs)))
     xs = np.stack(xs)
     ts = np.linspace(0, t1, xs.shape[0])

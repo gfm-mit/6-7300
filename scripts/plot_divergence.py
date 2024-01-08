@@ -1,6 +1,7 @@
 import sys
 import os
 import pathlib
+sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 import time
 import einops
 import matplotlib.pyplot as plt
@@ -12,7 +13,7 @@ import pandas as pd
 sys.path.append(os.path.join(pathlib.Path(__file__).parent.absolute(), '..'))
 from domain_specific.evalf import evalf, get_exports
 from domain_specific.x0 import generate_deterministic_inputs, generate_stochastic_inputs
-from dynamic import explicit
+from dynamic import explicit, implicit
 
 def stochastic_parameter_value():
     n = 100
@@ -37,7 +38,8 @@ def stochastic_parameter_value():
         u=u,
         t1=t1,
         delta_t=delta_t,
-        f_step=explicit.rk4,
+        guess=explicit.rk4,
+        evalf_converter=implicit.get_trapezoid_f,
     )
     x3 = np.reshape(x0, [-1])
     #print(np.round(get_exports(x0[1], p), 20))
@@ -46,7 +48,7 @@ def stochastic_parameter_value():
     #    '(n d) -> n d', d=3, n=n))
     try:
         #xs = list(tqdm(explicit.simulate(**kwargs)))
-        xs = list(explicit.simulate(**kwargs))
+        xs = list(implicit.simulate(**kwargs))
         xs = np.stack(xs)
         norm = np.linalg.norm(xs[:, n:2*n], np.inf, axis=1)
         norm = norm[-1]
